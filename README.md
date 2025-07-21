@@ -99,28 +99,25 @@ cd frontend
 ```bash
 npm install
 npm install -D tailwindcss postcss autoprefixer
-npx tailwindcss init -p
+npm install tailwindcss @tailwindcss/vite
 ```
 
-3. **Configure Tailwind in `tailwind.config.js`**
+3. **Configure Tailwind in `vite.config.js`**
 ```js
-export default {
-  content: [
-    "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
-  ],
-  theme: {
-    extend: {},
-  },
-  plugins: [],
-}
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+import tailwindcss from '@tailwindcss/vite'
+
+// https://vite.dev/config/
+export default defineConfig({
+  plugins: [react(), tailwindcss()],
+})
+
 ```
 
 4. **Add Tailwind Directives in `src/index.css`**
 ```css
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 ```
 
 5. **Run React Dev Server**
