@@ -1,3 +1,4 @@
+
 # AI-Oracle-Chatbot
 
 ## Project Overview
@@ -19,31 +20,29 @@ The AI-Oracle-Chatbot is a full-stack web application designed to translate natu
 
 ## Project Structure
 
+```
 /ai-oracle-chatbot
 │
 ├── backend
-│ ├── venv/ # Python virtual environment
-│ ├── main.py # FastAPI main app
-│ ├── ai_handler.py # Handles AI interactions
-│ ├── db_handler.py # Handles Oracle DB queries
-│ ├── .env # Environment variables
-│ └── requirements.txt # Python dependencies
+│   ├── venv/                  # Python virtual environment
+│   ├── main.py                # FastAPI main app
+│   ├── ai_handler.py          # Handles AI interactions
+│   ├── db_handler.py          # Handles Oracle DB queries
+│   ├── .env                   # Environment variables
+│   └── requirements.txt       # Python dependencies
 │
 ├── frontend
-│ ├── public/
-│ ├── src/
-│ │ ├── components/ # React components
-│ │ ├── services/ # API calls
-│ │ ├── App.jsx # Main React component
-│ │ └── index.css # Tailwind CSS imports
-│ ├── tailwind.config.js # Tailwind config
-│ └── package.json # NPM dependencies
+│   ├── public/
+│   ├── src/
+│   │   ├── components/        # React components
+│   │   ├── services/          # API calls
+│   │   ├── App.jsx            # Main React component
+│   │   └── index.css          # Tailwind CSS imports
+│   ├── tailwind.config.js     # Tailwind config
+│   └── package.json           # NPM dependencies
 │
 └── README.md
-
-yaml
-Copy
-Edit
+```
 
 ---
 
@@ -55,62 +54,56 @@ Edit
 ```bash
 cd backend
 python -m venv venv
-venv\Scripts\activate  # On Windows
-source venv/bin/activate  # On Linux/Mac
-Install Dependencies
+# Activate on Windows
+venv\Scripts\activate
+# Activate on Linux/Mac
+source venv/bin/activate
+```
 
-bash
-Copy
-Edit
+2. **Install Dependencies**
+```bash
 pip install fastapi uvicorn python-dotenv huggingface_hub oracledb
-Setup Oracle Instant Client (for thick mode)
+```
 
-Download the Oracle Instant Client from Oracle's official site.
+3. **Setup Oracle Instant Client (for thick mode)**
 
-Extract it to a location e.g., D:\instantclient_23_8.
-
-Initialize thick mode in your code:
-
-python
-Copy
-Edit
+- Download from Oracle's official site.
+- Extract to a location like `D:\instantclient_23_8`.
+- Initialize thick mode in your code:
+```python
 oracledb.init_oracle_client(lib_dir=r"D:\instantclient_23_8")
-Create .env file in the backend directory:
+```
 
-ini
-Copy
-Edit
+4. **Create `.env` file in `backend` directory**
+```
 HF_TOKEN=your_hugging_face_token
 DB_USER=your_db_username
 DB_PASSWORD=your_db_password
 DB_DSN=localhost/XE
-Run the FastAPI Server:
+```
 
-bash
-Copy
-Edit
+5. **Run FastAPI Server**
+```bash
 uvicorn main:app --reload
-Frontend Setup
-Initialize Vite React Project
+```
 
-bash
-Copy
-Edit
+### Frontend Setup
+
+1. **Initialize Vite React Project**
+```bash
 npm create vite@latest frontend -- --template react
 cd frontend
-Install Dependencies
+```
 
-bash
-Copy
-Edit
+2. **Install Dependencies**
+```bash
 npm install
 npm install -D tailwindcss postcss autoprefixer
 npx tailwindcss init -p
-Configure Tailwind in tailwind.config.js
+```
 
-js
-Copy
-Edit
+3. **Configure Tailwind in `tailwind.config.js`**
+```js
 export default {
   content: [
     "./index.html",
@@ -121,50 +114,46 @@ export default {
   },
   plugins: [],
 }
-Add Tailwind Directives in src/index.css
+```
 
-css
-Copy
-Edit
+4. **Add Tailwind Directives in `src/index.css`**
+```css
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-Run React Dev Server:
+```
 
-bash
-Copy
-Edit
+5. **Run React Dev Server**
+```bash
 npm run dev
-Libraries & Technologies
-Backend
-FastAPI: Python web framework for the API.
+```
 
-Uvicorn: ASGI server for FastAPI.
+---
 
-python-dotenv: Loads environment variables.
+## Libraries & Technologies
 
-huggingface_hub: For accessing Hugging Face models.
+### Backend
+- **FastAPI:** Python web framework
+- **Uvicorn:** ASGI server
+- **python-dotenv:** Load environment variables
+- **huggingface_hub:** Access Hugging Face models
+- **oracledb:** Oracle DB connectivity
 
-oracledb: Python package for Oracle DB connectivity.
+### Frontend
+- **React:** UI development
+- **Vite:** Frontend tooling
+- **Tailwind CSS:** UI styling
 
-Frontend
-React: Frontend library.
+### Database
+- **Oracle DB:** 11g XE / 19c / 21c XE
+- **SQL Developer:** GUI client for Oracle
 
-Vite: Modern build tool.
+---
 
-Tailwind CSS: For UI styling.
+## Usage
 
-Oracle DB
-Oracle 11g XE / 19c / 21c XE
-
-SQL Developer: For database interaction.
-
-Usage
-Start the backend FastAPI server.
-
-Start the frontend React app.
-
-Open the frontend UI to interact with the chatbot.
-
-The chatbot sends queries to FastAPI, which uses Hugging Face to translate natural language to SQL, then executes the query on Oracle DB.
-
+1. Start the **backend** FastAPI server.
+2. Start the **frontend** React app.
+3. Open the frontend in your browser.
+4. Input your queries via chat interface.
+5. Queries are sent to FastAPI backend which uses Hugging Face API to translate to SQL, executes on Oracle DB, and returns results.
