@@ -1,7 +1,7 @@
 import os
 from dotenv import load_dotenv
 from huggingface_hub import InferenceClient
-
+from db_handler import extract_db_metadata
 # Load environment variables from .env file
 load_dotenv()
 
@@ -25,7 +25,8 @@ def generate_sql_from_prompt(prompt: str) -> str:
         system_prompt = (
             "You are an AI SQL expert that generates **ONLY** SQL queries from user prompts. "
             "Return a syntactically correct SQL query for Oracle Database. "
-            "DO NOT include explanations, formatting, or text outside the SQL query."
+            "DO NOT include explanations, formatting, or text outside the SQL query.\n\n"
+            f"Here is the database metadata: {extract_db_metadata()}"
         )
 
         # Compose chat messages
@@ -37,9 +38,11 @@ def generate_sql_from_prompt(prompt: str) -> str:
         # Generate completion from model
         completion = client.chat.completions.create(
             model="defog/llama-3-sqlcoder-8b",
+            
             messages=messages,
         )
-
+        
+    
         # Extract the AI-generated message
         ai_message = completion.choices[0].message.content.strip()
 
@@ -51,4 +54,6 @@ def generate_sql_from_prompt(prompt: str) -> str:
 
     except Exception as e:
         # Raising exception is better for debugging/logging in production
+        if "429" in str(e):
+            return {"error": "Rate limit exceeded. Please wait and try again later."}
         raise RuntimeError(f"AI SQL generation failed: {e}")
