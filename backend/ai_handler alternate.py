@@ -1,9 +1,9 @@
 import os
 from dotenv import load_dotenv
+from huggingface_hub import InferenceClient
 from db_handler import extract_db_metadata
 import re
 import logging
-import requests
 
 # Load environment variables from .env file
 load_dotenv()
@@ -18,9 +18,11 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# LM Studio local endpoint
-LM_STUDIO_API_URL = os.getenv("LM_STUDIO_URL", "http://localhost:1234/v1/chat/completions")
-LM_STUDIO_MODEL = os.getenv("LM_STUDIO_MODEL", "TheBloke/sqlcoder2-GGUF")
+# Initialize Hugging Face Inference Client using the free provider
+client = InferenceClient(
+    provider="featherless-ai",
+    api_key=os.getenv("HF_TOKEN")
+)
 
 def generate_sql_from_prompt(prompt: str) -> str:
     """
@@ -36,7 +38,7 @@ def generate_sql_from_prompt(prompt: str) -> str:
         # Retrieve latest cached database metadata (tables, columns, etc.)
         metadata = extract_db_metadata()
         logger.info("Database metadata extracted for context injection.")
-        print(f"Metadata: {metadata}")
+
         # Construct a rich, structured system prompt
         system_prompt = (
             "You are an expert AI specialized in generating SQL queries strictly for Oracle Database systems.\n\n"
@@ -48,43 +50,27 @@ def generate_sql_from_prompt(prompt: str) -> str:
             "- Use the provided metadata for column names, table relationships, and constraints.\n"
             "- Avoid using 'dual' unless required.\n"
             "- Always prefer joins only when there are foreign key relationships.\n"
-            "- Avoid overly complex queries when possible.\n"
+            "- Avoid overly complex queries.\n"
             "- The SQL query must be directly executable without any editing.\n\n"
-            "- Make sure that the commands are direclty executable in oracle database\n\n"
-            "- Do not make use of the AS keyword as it is not for Oracle database\n\n"
-            "- Go through metadata for finding the correct table and the correct column names for generated sql query\n\n"
-            "- Make use of left or right joins where possible so that soime data is always returned even if some columns return empty"
             "**End of Metadata.**\n\n"
             "Now generate the appropriate SQL query for the following prompt:"
         )
 
-        logger.debug(f"System prompt sent to LM Studio: {system_prompt}")
+        logger.debug(f"System prompt sent to AI: {system_prompt}")
 
-        # Compose chat messages
+        # Compose chat messages with system prompt and user input
         messages = [
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": prompt}
         ]
 
-        # Call LM Studio locally
-        response = requests.post(
-            LM_STUDIO_API_URL,
-            headers={"Content-Type": "application/json"},
-            json={
-                "model": LM_STUDIO_MODEL,
-                "messages": messages,
-                "temperature": 0.2,
-                "max_tokens": 512
-            },
-            timeout=30
+        # Send the prompt to the AI model
+        completion = client.chat.completions.create(
+            model="defog/llama-3-sqlcoder-8b",
+            messages=messages,
         )
 
-        if response.status_code != 200:
-            logger.error(f"LM Studio returned non-200 status: {response.status_code} | {response.text}")
-            return {"error": f"Local model error: {response.text}"}
-
-        completion = response.json()
-        ai_message = completion["choices"][0]["message"]["content"].strip()
+        ai_message = completion.choices[0].message.content.strip()
         logger.info(f"Raw AI response: {ai_message}")
 
         # Clean the AI output to ensure it's pure SQL
@@ -93,13 +79,18 @@ def generate_sql_from_prompt(prompt: str) -> str:
 
         return cleaned_sql
 
-    except requests.exceptions.RequestException as e:
-        logger.error(f"Connection error with LM Studio: {e}")
-        return {"error": "Failed to connect to local model. Make sure LM Studio is running."}
-
     except Exception as e:
-        logger.error(f"Unexpected error in AI handler: {e}")
-        raise RuntimeError(f"AI SQL generation failed: {str(e)}")
+        # Handle common API error cases gracefully
+        error_message = str(e)
+        if "429" in error_message:
+            logger.warning("Rate limit exceeded during AI call.")
+            return {"error": "Rate limit exceeded. Please wait and try again."}
+        elif "504" in error_message:
+            logger.error("Timeout from AI provider.")
+            return {"error": "AI provider timeout. Please try again later."}
+        
+        logger.error(f"Unexpected error in AI handler: {error_message}")
+        raise RuntimeError(f"AI SQL generation failed: {error_message}")
 
 
 def clean_ai_output(output: str) -> str:
@@ -113,12 +104,12 @@ def clean_ai_output(output: str) -> str:
         str: Clean SQL query string.
     """
     # Remove common formatting and noise
-    output = re.sub(r'[`*]+', '', output)  # Remove markdown formatting like ``` or **bold**
+    output = re.sub(r'[*]+', '', output)  # Remove markdown formatting like  or **bold**
     output = re.sub(r'[!]+', '', output)   # Remove exclamation marks
     output = re.sub(r'^\d+\.\s*', '', output)  # Remove numbering like '1. '
     
     # If wrapped in markdown backticks, strip them
-    if output.startswith("```") and output.endswith("```"):
+    if output.startswith("") and output.endswith(""):
         output = '\n'.join(output.split('\n')[1:-1]).strip()
     
     # Further clean by stripping extra spaces/newlines

@@ -1,8 +1,11 @@
 import oracledb
+from dotenv import load_dotenv
+import os
 
 # Initialize the Oracle Client in 'thick mode' by specifying the Instant Client path.
 # This is REQUIRED for connecting to older versions of Oracle like 11g.
-oracledb.init_oracle_client(lib_dir=r"D:\instantclient-basic-windows.x64-23.8.0.25.04\instantclient_23_8")
+load_dotenv()
+oracledb.init_oracle_client(lib_dir=os.getenv("INSTANT_CLIENT"))
 
 # Database configuration: replace these with your actual credentials.
 DB_USER = 'chatbot_user'
@@ -51,7 +54,7 @@ def execute_query(query: str):
         if cursor.description:
             # Extract column names from cursor.description
             columns = [col[0] for col in cursor.description]
-            
+            print(f"columns:  {columns}")
             # Map each row to a dictionary {column_name: value, ...}
             results = [
                 dict(zip(columns, row))
@@ -78,8 +81,8 @@ def execute_query(query: str):
             conn.close()
 
 
-import oracledb
-from db_handler import get_connection
+
+
 
 # Cache variable to store metadata after first retrieval
 _cached_metadata = None
