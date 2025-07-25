@@ -1,9 +1,10 @@
 import os
 from dotenv import load_dotenv
-from huggingface_hub import InferenceClient
 from db_handler import extract_db_metadata
 import re
 import logging
+import requests
+import json
 
 # Load environment variables from .env file
 load_dotenv()
@@ -18,11 +19,8 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Initialize Hugging Face Inference Client using the free provider
-client = InferenceClient(
-    provider="featherless-ai",
-    api_key=os.getenv("HF_TOKEN")
-)
+# URL of the local Ollama server
+OLLAMA_URL = "http://localhost:11434/api/chat"
 
 def generate_sql_from_prompt(prompt: str) -> str:
     """
@@ -58,19 +56,20 @@ def generate_sql_from_prompt(prompt: str) -> str:
 
         logger.debug(f"System prompt sent to AI: {system_prompt}")
 
-        # Compose chat messages with system prompt and user input
-        messages = [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": prompt}
-        ]
+        # Construct message payload for Ollama API
+        payload = {
+            "model": "mistral",
+            "messages": [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": prompt}
+            ],
+            "stream": False
+        }
 
-        # Send the prompt to the AI model
-        completion = client.chat.completions.create(
-            model="defog/llama-3-sqlcoder-8b",
-            messages=messages,
-        )
+        response = requests.post(OLLAMA_URL, json=payload)
+        response.raise_for_status()
 
-        ai_message = completion.choices[0].message.content.strip()
+        ai_message = response.json()["message"]["content"].strip()
         logger.info(f"Raw AI response: {ai_message}")
 
         # Clean the AI output to ensure it's pure SQL
@@ -79,18 +78,12 @@ def generate_sql_from_prompt(prompt: str) -> str:
 
         return cleaned_sql
 
+    except requests.exceptions.RequestException as e:
+        logger.error(f"Request to Ollama failed: {e}")
+        return {"error": "Failed to reach Ollama. Is the server running?"}
     except Exception as e:
-        # Handle common API error cases gracefully
-        error_message = str(e)
-        if "429" in error_message:
-            logger.warning("Rate limit exceeded during AI call.")
-            return {"error": "Rate limit exceeded. Please wait and try again."}
-        elif "504" in error_message:
-            logger.error("Timeout from AI provider.")
-            return {"error": "AI provider timeout. Please try again later."}
-        
-        logger.error(f"Unexpected error in AI handler: {error_message}")
-        raise RuntimeError(f"AI SQL generation failed: {error_message}")
+        logger.error(f"Unexpected error in AI handler: {e}")
+        raise RuntimeError(f"AI SQL generation failed: {str(e)}")
 
 
 def clean_ai_output(output: str) -> str:
@@ -103,14 +96,11 @@ def clean_ai_output(output: str) -> str:
     Returns:
         str: Clean SQL query string.
     """
-    # Remove common formatting and noise
-    output = re.sub(r'[*]+', '', output)  # Remove markdown formatting like  or **bold**
+    output = re.sub(r'[*]+', '', output)  # Remove markdown bold (**)
     output = re.sub(r'[!]+', '', output)   # Remove exclamation marks
-    output = re.sub(r'^\d+\.\s*', '', output)  # Remove numbering like '1. '
-    
-    # If wrapped in markdown backticks, strip them
-    if output.startswith("") and output.endswith(""):
-        output = '\n'.join(output.split('\n')[1:-1]).strip()
-    
-    # Further clean by stripping extra spaces/newlines
+    output = re.sub(r'^\d+\.\s*', '', output)  # Remove numbering
+
+    # If wrapped in backticks, remove them
+    output = output.strip('`').strip()
+
     return output.strip()
