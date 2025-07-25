@@ -1,7 +1,13 @@
 import oracledb
 from dotenv import load_dotenv
 import os
+import traceback
+import logging
 
+import time
+
+
+logging.basicConfig(filename="db_errors.log", level=logging.ERROR)
 # Initialize the Oracle Client in 'thick mode' by specifying the Instant Client path.
 # This is REQUIRED for connecting to older versions of Oracle like 11g.
 load_dotenv()
@@ -26,59 +32,78 @@ def get_connection():
         mode=oracledb.AUTH_MODE_DEFAULT  # Explicitly using standard authentication.
     )
 
+
+def connect_with_retry(max_retries=3, delay=2):
+    for attempt in range(1, max_retries + 1):
+        try:
+            conn = get_connection()
+            return conn
+        except oracledb.Error as e:
+            if attempt < max_retries:
+                print(f"Connection failed (attempt {attempt}), retrying...")
+                time.sleep(delay)
+            else:
+                raise e  # re-raise the last error after final attempt
+
+
 def execute_query(query: str):
     """
-    Executes a SQL query (can be SELECT, INSERT, UPDATE, DELETE, DDL etc.)
-    
-    Args:
-        query (str): The SQL query to be executed.
-    
+    Executes a SQL query (SELECT, DML, or DDL) and returns results or error details.
+
     Returns:
-        list of dict: If query is a SELECT, returns a list of rows mapped as dictionaries.
-        dict: If query is DDL/DML, returns a success message.
-        dict: In case of error, returns an error message and debug context.
+        list[dict]: For SELECT queries, returns list of rows as dictionaries.
+        dict: For DML/DDL, returns a success message.
+        dict: For errors, returns structured error with traceback.
     """
     conn = None
     cursor = None
     try:
-        # Establish database connection
-        conn = get_connection()
+        # Get connection
+        conn = connect_with_retry()
         cursor = conn.cursor()
 
-        # Execute the provided query
-        # Clean up the query to remove trailing semicolon
+        # Clean up query and execute
         query = query.strip().rstrip(';')
         cursor.execute(query)
 
-        # cursor.description is not None if the query returns rows (e.g., SELECT).
+        # If SELECT query
         if cursor.description:
-            # Extract column names from cursor.description
             columns = [col[0] for col in cursor.description]
-            print(f"columns:  {columns}")
-            # Map each row to a dictionary {column_name: value, ...}
-            results = [
-                dict(zip(columns, row))
-                for row in cursor.fetchall()
-            ]
+            rows = cursor.fetchall()
+            results = [dict(zip(columns, row)) for row in rows]
             return results
         else:
-            # If query is DML/DDL, commit changes to database
             conn.commit()
             return {"message": "Query executed successfully"}
 
-    except Exception as e:
-        # Catch any errors that occur during connection or query execution
+    except oracledb.DatabaseError as db_err:
+        # Database-specific errors
+        error_obj, = db_err.args
         return {
-            "error": str(e),
-            "context": locals()  # Include local variables for debugging
+            "error": "Database Error",
+            "message": str(error_obj.message),
+            "code": error_obj.code,
+            "query": query
+        }
+
+    except Exception as e:
+        logging.error("Unexpected error:\n%s", traceback.format_exc())
+        # General Python errors (e.g., type error in AI logic)
+        return {
+            "error": "Unexpected Error",
+            "message": str(e),
+            "query": query,
+            "trace": traceback.format_exc()
         }
 
     finally:
-        # Ensure cursor and connection are always closed (even if errors occur)
+        # Close resources
         if cursor:
-            cursor.close()
+            try: cursor.close()
+            except: pass
         if conn:
-            conn.close()
+            try: conn.close()
+            except: pass
 
 
 

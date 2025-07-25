@@ -44,9 +44,11 @@ def query_database(request: QueryRequest):
         # 2. Execute the SQL on Oracle DB
         db_result = execute_query(generated_sql)
         print(f"db_result: {db_result}")
-
+        if isinstance(db_result,dict) and "error" in db_result:
+            return f"{db_result['error']}: {db_result['message']}"
+        else:
         # 3. Return both the generated SQL and database result
-        return QueryResponse(generated_sql=generated_sql, results=db_result)
+            return QueryResponse(generated_sql=generated_sql, results=db_result)
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
