@@ -1,0 +1,30 @@
+2025-07-23 15:04:05,392 - ai_handler - INFO - Database metadata extracted for context injection.
+2025-07-23 15:04:17,599 - ai_handler - INFO - Raw AI response: SELECT dept_id, dept_name FROM departments;
+2025-07-23 15:04:17,600 - ai_handler - INFO - Cleaned SQL: SELECT dept_id, dept_name FROM departments;
+2025-07-23 15:14:14,091 - ai_handler - INFO - Database metadata extracted for context injection.
+2025-07-23 15:14:32,409 - ai_handler - INFO - Raw AI response: SELECT e.emp_id, e.emp_name, d.dept_name, cm.car_model FROM employees AS e JOIN departments AS d ON e.dept_id = d.dept_id LEFT JOIN customer_manager AS cm ON e.emp_id = cm.manager_id;
+2025-07-23 15:14:32,409 - ai_handler - INFO - Cleaned SQL: SELECT e.emp_id, e.emp_name, d.dept_name, cm.car_model FROM employees AS e JOIN departments AS d ON e.dept_id = d.dept_id LEFT JOIN customer_manager AS cm ON e.emp_id = cm.manager_id;
+2025-07-23 15:19:56,864 - ai_handler - INFO - Database metadata extracted for context injection.
+2025-07-23 15:20:16,699 - ai_handler - INFO - Raw AI response: SELECT e.emp_name, d.dept_name, v.plate_number FROM employees e JOIN departments d ON e.dept_id = d.dept_id JOIN vehicles v ON e.vehicle_id = v.vehicle_id;
+2025-07-23 15:20:16,699 - ai_handler - INFO - Cleaned SQL: SELECT e.emp_name, d.dept_name, v.plate_number FROM employees e JOIN departments d ON e.dept_id = d.dept_id JOIN vehicles v ON e.vehicle_id = v.vehicle_id;
+2025-07-23 15:22:31,668 - ai_handler - INFO - Database metadata extracted for context injection.
+2025-07-23 15:22:50,218 - ai_handler - INFO - Raw AI response: SELECT e.emp_id, e.emp_name, d.dept_name dept_name, v.plate_number vehicle_plate_number FROM employees e JOIN departments d ON e.dept_id = d.dept_id LEFT JOIN vehicles v ON e.vehicle_id = v.vehicle_id;
+2025-07-23 15:22:50,218 - ai_handler - INFO - Cleaned SQL: SELECT e.emp_id, e.emp_name, d.dept_name dept_name, v.plate_number vehicle_plate_number FROM employees e JOIN departments d ON e.dept_id = d.dept_id LEFT JOIN vehicles v ON e.vehicle_id = v.vehicle_id;
+2025-07-23 15:25:31,974 - ai_handler - INFO - Database metadata extracted for context injection.
+2025-07-23 15:25:41,828 - ai_handler - INFO - Raw AI response: SELECT e.emp_name, d.dept_name FROM employees e JOIN departments d ON e.dept_id = d.dept_id;
+2025-07-23 15:25:41,828 - ai_handler - INFO - Cleaned SQL: SELECT e.emp_name, d.dept_name FROM employees e JOIN departments d ON e.dept_id = d.dept_id;
+2025-07-23 15:27:17,171 - ai_handler - INFO - Database metadata extracted for context injection.
+2025-07-23 15:27:26,844 - ai_handler - INFO - Raw AI response: SELECT e.emp_name, d.dept_name FROM employees e JOIN departments d ON e.dept_id = d.dept_id;
+2025-07-23 15:27:26,844 - ai_handler - INFO - Cleaned SQL: SELECT e.emp_name, d.dept_name FROM employees e JOIN departments d ON e.dept_id = d.dept_id;
+2025-07-23 15:28:35,826 - ai_handler - INFO - Database metadata extracted for context injection.
+2025-07-23 15:28:45,455 - ai_handler - INFO - Raw AI response: SELECT e.emp_name, d.dept_name FROM employees e JOIN departments d ON e.dept_id = d.dept_id;
+2025-07-23 15:28:45,455 - ai_handler - INFO - Cleaned SQL: SELECT e.emp_name, d.dept_name FROM employees e JOIN departments d ON e.dept_id = d.dept_id;
+2025-07-23 15:33:31,497 - ai_handler - INFO - Database metadata extracted for context injection.
+2025-07-23 15:33:41,216 - ai_handler - INFO - Raw AI response: SELECT e.emp_name, d.dept_name FROM employees e JOIN departments d ON e.dept_id = d.dept_id;
+2025-07-23 15:33:41,216 - ai_handler - INFO - Cleaned SQL: SELECT e.emp_name, d.dept_name FROM employees e JOIN departments d ON e.dept_id = d.dept_id;
+2025-07-23 15:33:48,001 - ai_handler - INFO - Database metadata extracted for context injection.
+2025-07-23 15:34:06,802 - ai_handler - INFO - Raw AI response: SELECT e.emp_id, e.emp_name, d.dept_name dept_name , v.plate_number plate_number FROM employees e JOIN departments d ON e.dept_id = d.dept_id LEFT JOIN vehicles v ON e.vehicle_id = v.vehicle_id;
+2025-07-23 15:34:06,802 - ai_handler - INFO - Cleaned SQL: SELECT e.emp_id, e.emp_name, d.dept_name dept_name , v.plate_number plate_number FROM employees e JOIN departments d ON e.dept_id = d.dept_id LEFT JOIN vehicles v ON e.vehicle_id = v.vehicle_id;
+2025-07-24 21:57:10,353 - ai_handler - INFO - Database metadata extracted for context injection.
+2025-07-24 21:57:31,369 - ai_handler - INFO - Raw AI response: SELECT e.emp_id, e.emp_name, dept.dept_name FROM employees e JOIN departments dept ON e.dept_id = dept.dept_id;
+2025-07-24 21:57:31,369 - ai_handler - INFO - Cleaned SQL: SELECT e.emp_id, e.emp_name, dept.dept_name FROM employees e JOIN departments dept ON e.dept_id = dept.dept_id;
