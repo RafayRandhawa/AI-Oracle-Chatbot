@@ -2,8 +2,9 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from ai_handler import generate_sql_from_prompt
-from db_handler import execute_query
-
+from db_handler import execute_query,parameterize_query,is_safe_query
+import ai_handler_alternate
+from fastapi.responses import JSONResponse
 
 # Initialize the FastAPI application
 app = FastAPI(
@@ -36,20 +37,34 @@ def query_database(request: QueryRequest):
     try:
         # 1. Generate SQL from the AI model
         generated_sql = generate_sql_from_prompt(request.prompt)
-        print(f"generated_sql: {generated_sql}")
+        print(f"generated_sql: {generated_sql}\n\n")
         # Optional: If AI fails to generate proper SQL
-        if not generated_sql.strip().lower().startswith(("select", "insert", "update", "delete", "create", "alter", "drop","(")):
+        if not generated_sql.strip().lower().startswith(("select", "insert", "update" "create")):
+            # generated_sql = ai_handler_alternate(request.prompt)
+            # #Second AI model implemented as a fallback 
+            # if not generated_sql.strip().lower().startswith(("select", "insert", "update", "delete", "create", "alter", "drop","(")):
             raise HTTPException(status_code=400, detail="AI did not generate a valid SQL query.")
-
-        # 2. Execute the SQL on Oracle DB
-        db_result = execute_query(generated_sql)
-        print(f"db_result: {db_result}")
+        if not is_safe_query(generated_sql):
+            return JSONResponse(
+            status_code=500,
+            content={"success": False, "data": None, "error": f"Database Error: {str(e)}"}
+        )
+        parameterized_sql, params = parameterize_query(generated_sql)
+        print(f"Parameteized Query: {parameterized_sql}\n\nParameters: {params}\n\n")
+        db_result = execute_query(query=parameterized_sql,params=params)
+        print(f"db_result: {db_result}\n\n")
         if isinstance(db_result,dict) and "error" in db_result:
             return f"{db_result['error']}: {db_result['message']}"
         else:
         # 3. Return both the generated SQL and database result
             return QueryResponse(generated_sql=generated_sql, results=db_result)
 
+    except oracledb.DatabaseError as e:
+        return JSONResponse(
+            status_code=500,
+            content={"success": False, "data": None, "error": f"Database Error: {str(e)}"}
+        )
+    
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
