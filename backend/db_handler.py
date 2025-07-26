@@ -3,9 +3,11 @@ from dotenv import load_dotenv
 import os
 import traceback
 import logging
-
+import re
 import time
 
+# Cache variable to store metadata after first retrieval
+_cached_metadata = None
 
 logging.basicConfig(filename="db_errors.log", level=logging.ERROR)
 # Initialize the Oracle Client in 'thick mode' by specifying the Instant Client path.
@@ -46,39 +48,42 @@ def connect_with_retry(max_retries=3, delay=2):
                 raise e  # re-raise the last error after final attempt
 
 
-def execute_query(query: str):
+def execute_query(query: str, params: dict = None):
     """
-    Executes a SQL query (SELECT, DML, or DDL) and returns results or error details.
+    Executes a SQL query with optional parameters and returns results or error details.
+
+    Args:
+        query (str): SQL query with placeholders (e.g., SELECT * FROM employees WHERE name = :emp_name)
+        params (dict): Optional dictionary of bind parameters.
 
     Returns:
-        list[dict]: For SELECT queries, returns list of rows as dictionaries.
-        dict: For DML/DDL, returns a success message.
-        dict: For errors, returns structured error with traceback.
+        list[dict] | dict: Query results or status/error message.
     """
     conn = None
     cursor = None
     try:
-        # Get connection
         conn = connect_with_retry()
         cursor = conn.cursor()
 
-        # Clean up query and execute
         query = query.strip().rstrip(';')
-        cursor.execute(query)
+        logging.info("Executing query:\n%s\nParams: %s", query, params)
 
-        # If SELECT query
-        if cursor.description:
+        if params:
+            cursor.execute(query, params)
+        else:
+            cursor.execute(query)
+
+        if cursor.description:  # SELECT
             columns = [col[0] for col in cursor.description]
             rows = cursor.fetchall()
-            results = [dict(zip(columns, row)) for row in rows]
-            return results
-        else:
+            return [dict(zip(columns, row)) for row in rows]
+        else:  # DML / DDL
             conn.commit()
             return {"message": "Query executed successfully"}
 
     except oracledb.DatabaseError as db_err:
-        # Database-specific errors
         error_obj, = db_err.args
+        logging.error("Database error:\n%s", traceback.format_exc())
         return {
             "error": "Database Error",
             "message": str(error_obj.message),
@@ -88,7 +93,6 @@ def execute_query(query: str):
 
     except Exception as e:
         logging.error("Unexpected error:\n%s", traceback.format_exc())
-        # General Python errors (e.g., type error in AI logic)
         return {
             "error": "Unexpected Error",
             "message": str(e),
@@ -97,20 +101,12 @@ def execute_query(query: str):
         }
 
     finally:
-        # Close resources
         if cursor:
             try: cursor.close()
             except: pass
         if conn:
             try: conn.close()
             except: pass
-
-
-
-
-
-# Cache variable to store metadata after first retrieval
-_cached_metadata = None
 
 
 def extract_db_metadata(force_refresh=False):
@@ -243,3 +239,88 @@ def extract_db_metadata(force_refresh=False):
     finally:
         cursor.close()
         conn.close()
+
+
+
+def parameterize_query(query: str):
+    param_index = 1
+    params = {}
+
+    # 1️⃣ Handle TO_DATE('...', '...') → :paramX
+    def replace_todate(match):
+        nonlocal param_index
+        date_val = match.group(1)
+        fmt_val = match.group(2)
+        key = f"param{param_index}"
+        param_index += 1
+        params[key] = (date_val, fmt_val)
+        return f"TO_DATE(:{key}, '{fmt_val}')"
+
+    query = re.sub(r"TO_DATE\s*\(\s*'([^']+)'\s*,\s*'([^']+)'\s*\)", replace_todate, query, flags=re.IGNORECASE)
+
+    # 2️⃣ Handle ILIKE → LOWER(column) LIKE LOWER(:paramX)
+    def replace_ilike(match):
+        nonlocal param_index
+        column = match.group(1)
+        value = match.group(2)
+        key = f"param{param_index}"
+        param_index += 1
+        params[key] = value
+        return f"LOWER({column}) LIKE LOWER(:{key})"
+
+    query = re.sub(
+        r"(\w+(?:\.\w+)?)\s+ILIKE\s+'([^']*)'",
+        replace_ilike,
+        query,
+        flags=re.IGNORECASE
+    )
+
+
+    # 3️⃣ Handle IN (...) with strings or numbers → IN (:param1, :param2, ...)
+    def replace_in_clause(match):
+        nonlocal param_index
+        values = match.group(1)
+        elements = [v.strip().strip("'") for v in values.split(',')]
+        bind_keys = []
+        for val in elements:
+            key = f"param{param_index}"
+            param_index += 1
+            try:
+                val_converted = float(val) if '.' in val else int(val)
+            except ValueError:
+                val_converted = val
+            params[key] = val_converted
+            bind_keys.append(f":{key}")
+        return f"IN ({', '.join(bind_keys)})"
+
+    query = re.sub(r"\bIN\s*\(\s*([^)]+?)\s*\)", replace_in_clause, query, flags=re.IGNORECASE)
+
+    # 4️⃣ Replace string literals → :paramX
+    def replace_string(match):
+        nonlocal param_index
+        key = f"param{param_index}"
+        param_index += 1
+        value = match.group(1)
+        params[key] = value
+        return f":{key}"
+
+    query = re.sub(r"'([^']*)'", replace_string, query)
+
+    # 5️⃣ Replace numbers (not part of identifiers or TO_DATE) → :paramX
+    def replace_number(match):
+        nonlocal param_index
+        key = f"param{param_index}"
+        param_index += 1
+        num_str = match.group(0)
+        value = float(num_str) if '.' in num_str else int(num_str)
+        params[key] = value
+        return f":{key}"
+
+    query = re.sub(r'(?<![\w.])(\d+(\.\d+)?)(?!\w)', replace_number, query)
+
+    return query, params
+
+
+def is_safe_query(sql: str) -> bool:
+    forbidden_keywords = ["DROP", "DELETE", "TRUNCATE", "ALTER", "MERGE", "UPDATE", "INSERT"]
+    return not any(kw in sql.upper() for kw in forbidden_keywords)
