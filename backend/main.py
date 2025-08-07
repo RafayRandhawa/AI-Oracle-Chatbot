@@ -5,6 +5,12 @@ from ai_handler import generate_sql_from_prompt
 from db_handler import execute_query,parameterize_query,is_safe_query,extract_db_metadata
 import ai_handler_alternate
 from fastapi.responses import JSONResponse
+from embedder import embed_texts
+from pinecone_utils import upsert_metadata, query_similar_metadata
+from oracle_metadata import get_metadata_rows, format_metadata_rows
+from fastapi import Request
+
+
 
 # Initialize the FastAPI application
 app = FastAPI(
@@ -89,12 +95,37 @@ def db_direct(query:str):
         query,params = parameterize_query(query)
         if(is_safe_query(query)):
             db_result = execute_query(query=query, params=params)
+            return {"success": True, 'results': query,  "results": db_result}
         else:
             return JSONResponse(
                 status_code=500,
                 content={"success": False, "data": None, "error": "Query is not safe"})
-        return {"success": True, 'results': query,  "results": db_result}
+        
     except Exception as e:
         return JSONResponse(
             status_code=500,
             content={"success": False, "results": None, "error": str(e)})
+
+
+
+@app.on_event("startup")
+def preload_embeddings():
+    rows = get_metadata_rows()
+    #print(f"rows: {rows}\n\n")
+    formatted = format_metadata_rows(rows)
+    #print(f"formatted: {formatted}\n\n")
+    embeddings = embed_texts(formatted, task_type="RETRIEVAL_DOCUMENT")
+    #print(f"embeddings: {embeddings}\n\n")
+    upsert_metadata(formatted, embeddings)
+    print("✅ Oracle metadata embedded and pushed to Pinecone.")
+
+@app.post("/similar-metadata")
+async def semantic_metadata_search(request: Request):
+    body = await request.json()
+    query = body.get("query")
+    if not query:
+        raise HTTPException(status_code=400, detail="Missing 'query' in request body.")
+    
+    user_embedding = embed_texts([query], task_type="RETRIEVAL_QUERY")[0]
+    similar_metadata = query_similar_metadata(user_embedding)
+    return {"context": similar_metadata}
