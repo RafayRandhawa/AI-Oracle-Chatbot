@@ -2,7 +2,7 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from ai_handler import generate_sql_from_prompt
-from db_handler import execute_query,parameterize_query,is_safe_query
+from db_handler import execute_query,parameterize_query,is_safe_query,extract_db_metadata
 import ai_handler_alternate
 from fastapi.responses import JSONResponse
 
@@ -51,8 +51,10 @@ def query_database(request: QueryRequest):
         )
         parameterized_sql, params = parameterize_query(generated_sql)
         print(f"Parameteized Query: {parameterized_sql}\n\nParameters: {params}\n\n")
+
         db_result = execute_query(query=parameterized_sql,params=params)
         print(f"db_result: {db_result}\n\n")
+        
         if isinstance(db_result,dict) and "error" in db_result:
             return f"{db_result['error']}: {db_result['message']}"
         else:
@@ -74,5 +76,19 @@ def refresh_metadata():
     """
     API endpoint to refresh cached DB metadata.
     """
-    metadata = get_db_metadata(force_refresh=True)
+    metadata = extract_db_metadata(force_refresh=True)
     return {"message": "Metadata refreshed", "metadata": metadata}
+
+
+@app.get("/db-direct")
+def db_direct(query:str):
+    """
+    API endpoint to execute a raw SQL query directly on the database.
+    """
+    try:
+        db_result = execute_query(query=query)
+        return {"success": True, 'query': query,  "results": db_result}
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"success": False, "data": None, "error": str(e)})
