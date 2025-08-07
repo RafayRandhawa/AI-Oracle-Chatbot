@@ -91,22 +91,21 @@ def db_direct(query:str):
     """
     API endpoint to execute a raw SQL query directly on the database.
     """
-    try:
-        query,params = parameterize_query(query)
-        if(is_safe_query(query)):
+  
+    query,params = parameterize_query(query)
+    if(is_safe_query(query)):
+        try:
             db_result = execute_query(query=query, params=params)
             return {"success": True, 'results': query,  "results": db_result}
-        else:
+        except Exception as e:
             return JSONResponse(
                 status_code=500,
-                content={"success": False, "data": None, "error": "Query is not safe"})
-        
-    except Exception as e:
+                content={"success": False, "results": None, "error": str(e)})
+    else:
         return JSONResponse(
             status_code=500,
-            content={"success": False, "results": None, "error": str(e)})
-
-
+            content={"success": False, "data": None, "error": "Query is not safe"})
+        
 
 @app.on_event("startup")
 def preload_embeddings():
@@ -120,8 +119,8 @@ def preload_embeddings():
     print("✅ Oracle metadata embedded and pushed to Pinecone.")
 
 @app.post("/similar-metadata")
-async def semantic_metadata_search(request: Request):
-    body = await request.json()
+def semantic_metadata_search(request: Request):
+    body =  request.json()
     query = body.get("query")
     if not query:
         raise HTTPException(status_code=400, detail="Missing 'query' in request body.")
