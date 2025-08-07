@@ -1,1 +1,66 @@
 ERROR:ai_handler:Unexpected error in AI handler: ORA-12637: Packet receive failed
+ERROR:root:Database error:
+Traceback (most recent call last):
+  File "E:\AI-Oracle-Chatbot\backend\db_handler.py", line 74, in execute_query
+    cursor.execute(query)
+    ~~~~~~~~~~~~~~^^^^^^^
+  File "E:\AI-Oracle-Chatbot\backend\venv\Lib\site-packages\oracledb\cursor.py", line 708, in execute
+    impl.execute(self)
+    ~~~~~~~~~~~~^^^^^^
+  File "src/oracledb/impl/thick/cursor.pyx", line 318, in oracledb.thick_impl.ThickCursorImpl.execute
+  File "src/oracledb/impl/thick/utils.pyx", line 484, in oracledb.thick_impl._raise_from_odpi
+  File "src/oracledb/impl/thick/utils.pyx", line 474, in oracledb.thick_impl._raise_from_info
+oracledb.exceptions.DatabaseError: ORA-00942: table or view does not exist
+
+ERROR:root:Database error:
+Traceback (most recent call last):
+  File "E:\AI-Oracle-Chatbot\backend\db_handler.py", line 74, in execute_query
+    cursor.execute(query)
+    ~~~~~~~~~~~~~~^^^^^^^
+  File "E:\AI-Oracle-Chatbot\backend\venv\Lib\site-packages\oracledb\cursor.py", line 708, in execute
+    impl.execute(self)
+    ~~~~~~~~~~~~^^^^^^
+  File "src/oracledb/impl/thick/cursor.pyx", line 318, in oracledb.thick_impl.ThickCursorImpl.execute
+  File "src/oracledb/impl/thick/utils.pyx", line 484, in oracledb.thick_impl._raise_from_odpi
+  File "src/oracledb/impl/thick/utils.pyx", line 474, in oracledb.thick_impl._raise_from_info
+oracledb.exceptions.DatabaseError: ORA-00942: table or view does not exist
+
+ERROR:root:Database error:
+Traceback (most recent call last):
+  File "E:\AI-Oracle-Chatbot\backend\db_handler.py", line 74, in execute_query
+    cursor.execute(query)
+    ~~~~~~~~~~~~~~^^^^^^^
+  File "E:\AI-Oracle-Chatbot\backend\venv\Lib\site-packages\oracledb\cursor.py", line 708, in execute
+    impl.execute(self)
+    ~~~~~~~~~~~~^^^^^^
+  File "src/oracledb/impl/thick/cursor.pyx", line 318, in oracledb.thick_impl.ThickCursorImpl.execute
+  File "src/oracledb/impl/thick/utils.pyx", line 484, in oracledb.thick_impl._raise_from_odpi
+  File "src/oracledb/impl/thick/utils.pyx", line 474, in oracledb.thick_impl._raise_from_info
+oracledb.exceptions.DatabaseError: ORA-00942: table or view does not exist
+
+ERROR:root:Database error:
+Traceback (most recent call last):
+  File "E:\AI-Oracle-Chatbot\backend\db_handler.py", line 74, in execute_query
+    cursor.execute(query)
+    ~~~~~~~~~~~~~~^^^^^^^
+  File "E:\AI-Oracle-Chatbot\backend\venv\Lib\site-packages\oracledb\cursor.py", line 708, in execute
+    impl.execute(self)
+    ~~~~~~~~~~~~^^^^^^
+  File "src/oracledb/impl/thick/cursor.pyx", line 318, in oracledb.thick_impl.ThickCursorImpl.execute
+  File "src/oracledb/impl/thick/utils.pyx", line 484, in oracledb.thick_impl._raise_from_odpi
+  File "src/oracledb/impl/thick/utils.pyx", line 474, in oracledb.thick_impl._raise_from_info
+oracledb.exceptions.DatabaseError: ORA-00942: table or view does not exist
+
+ERROR:root:Database error:
+Traceback (most recent call last):
+  File "E:\AI-Oracle-Chatbot\backend\db_handler.py", line 74, in execute_query
+    cursor.execute(query)
+    ~~~~~~~~~~~~~~^^^^^^^
+  File "E:\AI-Oracle-Chatbot\backend\venv\Lib\site-packages\oracledb\cursor.py", line 708, in execute
+    impl.execute(self)
+    ~~~~~~~~~~~~^^^^^^
+  File "src/oracledb/impl/thick/cursor.pyx", line 318, in oracledb.thick_impl.ThickCursorImpl.execute
+  File "src/oracledb/impl/thick/utils.pyx", line 484, in oracledb.thick_impl._raise_from_odpi
+  File "src/oracledb/impl/thick/utils.pyx", line 474, in oracledb.thick_impl._raise_from_info
+oracledb.exceptions.DatabaseError: ORA-00942: table or view does not exist
+
