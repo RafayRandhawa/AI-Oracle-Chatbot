@@ -9,7 +9,7 @@ from embedder import embed_texts
 from pinecone_utils import upsert_metadata, query_similar_metadata
 from oracle_metadata import get_metadata_rows, format_metadata_rows
 from fastapi import Request
-
+import requests
 
 
 # Initialize the FastAPI application
@@ -27,6 +27,9 @@ class QueryRequest(BaseModel):
 class QueryResponse(BaseModel):
     generated_sql: str
     results: list | dict  # Could be a list of dicts for SELECT, or a dict for DML/DDL
+
+#class SimilarRequest(BaseModel):
+    
 
 
 @app.post("/query", response_model=QueryResponse)
@@ -108,6 +111,22 @@ def db_direct(query:str):
 
 
 
+
+@app.post("/similar-metadata")
+def semantic_metadata_search(query:str):
+    #body = request.json()
+    #query = body.get("query")
+    if not query:
+        raise HTTPException(status_code=400, detail="Missing 'query' in request body.")
+    
+    user_embedding = embed_texts([query], task_type="RETRIEVAL_QUERY")[0]
+    similar_metadata = query_similar_metadata(user_embedding)
+    return {"context": similar_metadata}
+
+
+
+
+
 @app.on_event("startup")
 def preload_embeddings():
     rows = get_metadata_rows()
@@ -119,13 +138,3 @@ def preload_embeddings():
     upsert_metadata(formatted, embeddings)
     print("✅ Oracle metadata embedded and pushed to Pinecone.")
 
-@app.post("/similar-metadata")
-async def semantic_metadata_search(request: Request):
-    body = await request.json()
-    query = body.get("query")
-    if not query:
-        raise HTTPException(status_code=400, detail="Missing 'query' in request body.")
-    
-    user_embedding = embed_texts([query], task_type="RETRIEVAL_QUERY")[0]
-    similar_metadata = query_similar_metadata(user_embedding)
-    return {"context": similar_metadata}
