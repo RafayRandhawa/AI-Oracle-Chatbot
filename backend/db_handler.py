@@ -322,5 +322,5 @@ def parameterize_query(query: str):
 
 
 def is_safe_query(sql: str) -> bool:
-    forbidden_keywords = ["DROP", "DELETE", "TRUNCATE", "ALTER", "MERGE", "UPDATE", "INSERT"]
+    forbidden_keywords = ["DROP", "DELETE", "TRUNCATE", "ALTER", "MERGE", "UPDATE", "INSERT","PURGE"]
     return not any(kw in sql.upper() for kw in forbidden_keywords)
