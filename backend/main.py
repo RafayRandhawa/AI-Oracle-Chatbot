@@ -86,9 +86,15 @@ def db_direct(query:str):
     API endpoint to execute a raw SQL query directly on the database.
     """
     try:
-        db_result = execute_query(query=query)
-        return {"success": True, 'query': query,  "results": db_result}
+        query,params = parameterize_query(query)
+        if(is_safe_query(query)):
+            db_result = execute_query(query=query, params=params)
+        else:
+            return JSONResponse(
+                status_code=500,
+                content={"success": False, "data": None, "error": "Query is not safe"})
+        return {"success": True, 'results': query,  "results": db_result}
     except Exception as e:
         return JSONResponse(
             status_code=500,
-            content={"success": False, "data": None, "error": str(e)})
+            content={"success": False, "results": None, "error": str(e)})
