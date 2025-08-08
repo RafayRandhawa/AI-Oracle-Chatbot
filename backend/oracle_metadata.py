@@ -32,15 +32,18 @@ def build_meta_chunks_from_metadata(metadata: dict, embeddings: list[list[float]
             )
             fk_info = f"{fk_ref['table']}.{fk_ref['column']}" if fk_ref else "None"
 
+            # Truncate long comments to 200 characters max
+            col_comment = (col["comment"] or "")[:200]
+            tbl_comment = (table_meta["table_comment"] or "")[:200]
+
             text_chunk =f"""Table: {table}
                             Column: {column_name}
                             Type: {col['type']}
                             Nullable: {col['nullable']}
-                            Column Comment: {col['comment']}
-                            Table Comment: {table_meta['table_comment']}
+                            Column Comment: {col_comment}
+                            Table Comment: {tbl_comment}
                             Primary Key: {"Yes" if column_name in table_meta["primary_keys"] else "No"}
-                            Foreign Key: {fk_info}
-                        """
+                            Foreign Key: {fk_info}"""
 
             chunks.append({
                 "id": f"meta-{table}-{column_name}",
@@ -51,15 +54,14 @@ def build_meta_chunks_from_metadata(metadata: dict, embeddings: list[list[float]
                     "column": column_name,
                     "type": col["type"],
                     "nullable": col["nullable"],
-                    "comment": col["comment"],
-                    "table_comment": table_meta["table_comment"],
                     "is_primary_key": column_name in table_meta["primary_keys"],
                     "is_foreign_key": fk_ref is not None,
-                    # "foreign_key_ref": json.dumps(fk_ref) if fk_ref else "None"
+                    "foreign_key_ref": fk_info  # Now a string, safe
                 }
             })
             i += 1
     return chunks
+
 def full_metadata_embedding_pipeline(owner="TIF"):
     # 1. Extract metadata
     metadata = extract_db_metadata(owner=owner)
@@ -82,10 +84,10 @@ def full_metadata_embedding_pipeline(owner="TIF"):
         for table, table_meta in metadata.items()
         for col in table_meta["columns"]
     ]
-
+    # print(text_chunks)
     # 3. Embed the texts
     embeddings = embed_texts(text_chunks)
-    print(embeddings)
+    # print(embeddings)
     if len(embeddings) != len(text_chunks):
         print("[❌] Embedding count does not match text chunk count")
         return

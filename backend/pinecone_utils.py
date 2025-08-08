@@ -25,8 +25,9 @@ if index_name not in pc.list_indexes().names():
 index = pc.Index(index_name)
 
 # Upsert metadata
-def upsert_metadata(meta_chunks: list[dict]):
+def upsert_metadata(meta_chunks: list[dict], batch_size: int = 300):
     upserts = []
+    total_upserted = 0
 
     for chunk in meta_chunks:
         _id = chunk.get("id")
@@ -42,11 +43,24 @@ def upsert_metadata(meta_chunks: list[dict]):
 
         upserts.append((_id, _vec, _meta))
 
+        # When batch is full, upsert to Pinecone
+        if len(upserts) == batch_size:
+            index.upsert(vectors=upserts, namespace="ai oracle metadata")
+            total_upserted += len(upserts)
+            print(f"[✅] Upserted {len(upserts)} vectors.")
+            upserts = []
+
+    # Upsert any remaining vectors after the loop
     if upserts:
         index.upsert(vectors=upserts, namespace="ai oracle metadata")
-        print(f"[✅] Upserted {len(upserts)} vectors.")
-    else:
+        total_upserted += len(upserts)
+        print(f"[✅] Upserted remaining {len(upserts)} vectors.")
+
+    if total_upserted == 0:
         print("[⚠️] No valid vectors to upsert.")
+    else:
+        print(f"[✅] Finished. Total upserted vectors: {total_upserted}")
+
 
 
 
