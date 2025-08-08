@@ -7,7 +7,7 @@ import ai_handler_alternate
 from fastapi.responses import JSONResponse
 from embedder import embed_texts
 from pinecone_utils import upsert_metadata, query_similar_metadata
-from oracle_metadata import get_metadata_rows, format_metadata_rows
+from oracle_metadata import full_metadata_embedding_pipeline, get_metadata_rows, format_metadata_rows
 from fastapi import Request
 import requests
 
@@ -128,12 +128,13 @@ def semantic_metadata_search(query:str):
 
 @app.on_event("startup")
 def preload_embeddings():
-    rows = get_metadata_rows()
-    print(f"rows: {rows}\n\n")
-    formatted = format_metadata_rows(rows)
-    print(f"formatted: {formatted}\n\n")
-    embeddings = embed_texts(formatted, task_type="RETRIEVAL_DOCUMENT")
-    print(f"embeddings: {embeddings}\n\n")
-    upsert_metadata(formatted, embeddings)
-    print("✅ Oracle metadata embedded and pushed to Pinecone.")
+    full_metadata_embedding_pipeline(owner='TIF')
+    # rows = get_metadata_rows()
+    # print(f"rows: {rows}\n\n")
+    # formatted = format_metadata_rows(rows)
+    # print(f"formatted: {formatted}\n\n")
+    # embeddings = embed_texts(formatted, task_type="RETRIEVAL_DOCUMENT")
+    # print(f"embeddings: {embeddings}\n\n")
+    # upsert_metadata(formatted, embeddings)
+    # print("✅ Oracle metadata embedded and pushed to Pinecone.")
 

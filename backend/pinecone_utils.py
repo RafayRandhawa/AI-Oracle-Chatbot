@@ -25,27 +25,29 @@ if index_name not in pc.list_indexes().names():
 index = pc.Index(index_name)
 
 # Upsert metadata
-def upsert_metadata(texts, vectors):
+def upsert_metadata(meta_chunks: list[dict]):
     upserts = []
-    for i in range(len(texts)):
-        _id = f"meta-{i}"
-        _vec = vectors[i]
-        _meta = {"text": texts[i]}
 
-        # Check validity
+    for chunk in meta_chunks:
+        _id = chunk.get("id")
+        _vec = chunk.get("vector")
+        _meta = chunk.get("metadata")
+
         if not isinstance(_id, str) or not isinstance(_vec, list) or not isinstance(_meta, dict):
-            print(f"[❌] Invalid vector format at index {i}")
+            print(f"[❌] Invalid vector format: {chunk}")
             continue
         if not all(isinstance(x, float) for x in _vec):
-            print(f"[❌] Vector at index {i} contains non-floats")
+            print(f"[❌] Vector for ID {_id} contains non-floats")
             continue
 
         upserts.append((_id, _vec, _meta))
 
-    #print(f"[✅] Prepared {len(upserts)} vectors for upsert")
-    #print("Sample vector:", upserts[0] if upserts else "None")
+    if upserts:
+        index.upsert(vectors=upserts, namespace="ai oracle metadata")
+        print(f"[✅] Upserted {len(upserts)} vectors.")
+    else:
+        print("[⚠️] No valid vectors to upsert.")
 
-    index.upsert(vectors=upserts, namespace="ai oracle metadata")
 
 
 
