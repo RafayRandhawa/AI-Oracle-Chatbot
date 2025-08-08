@@ -6,7 +6,7 @@ load_dotenv()
 
 
 # Initialize Pinecone
-pc = Pinecone(api_key='pcsk_2zM3GB_EEG9zdqHWBne9D8bxyLSwSHUo5z947ep85VJvaxZ7WUDV4VJMHmeNWk3agQAyFQ')
+pc = Pinecone(os.getenv('PINECONE_API_KEY'))
 
 index_name = "oracle-metadata"
 

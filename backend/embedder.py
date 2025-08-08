@@ -1,8 +1,11 @@
 import os
 import google.generativeai as genai
+from dotenv import load_dotenv
+
+load_dotenv
 
 # For Gemini API key use
-genai.configure(api_key="AIzaSyB7EAm9mjlXGb9FhxIuBq4SLipAhxzOsG0")
+genai.configure(api_key=os.getenv('GEMINI_API_KEY'))
 
 def embed_texts(texts: list[str], task_type="RETRIEVAL_DOCUMENT") -> list[list[float]]:
     """
