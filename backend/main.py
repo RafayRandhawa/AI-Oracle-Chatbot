@@ -114,8 +114,7 @@ def db_direct(query:str):
 
 @app.post("/similar-metadata")
 def semantic_metadata_search(query:str):
-    #body = request.json()
-    #query = body.get("query")
+    
     if not query:
         raise HTTPException(status_code=400, detail="Missing 'query' in request body.")
     
