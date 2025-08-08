@@ -16,9 +16,23 @@ load_dotenv()
 oracledb.init_oracle_client(lib_dir=os.getenv("INSTANT_CLIENT"))
 
 # Database configuration: replace these with your actual credentials.
-DB_USER = 'chatbot_user'
-DB_PASSWORD = 'chatbotpass'
-DB_DSN = 'localhost/XE'  # DSN format is 'hostname/SERVICE_NAME' for Oracle XE.
+
+# DB_USER = 'chatbot_user'
+# DB_PASSWORD = 'chatbotpass'
+# DB_DSN = 'localhost/XE'  
+
+# DSN format is 'hostname/SERVICE_NAME' for Oracle XE.
+
+
+#Test Server Credentials
+
+
+DB_USER = os.getenv('DB_USER')
+DB_PASSWORD = os.getenv('DB_PASSWORD')
+DB_DSN = os.getenv('DB_DSN')
+
+
+
 
 def get_connection():
     """

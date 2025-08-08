@@ -7,7 +7,7 @@ def get_metadata_rows():
     cursor.execute("""
         SELECT table_name, column_name, data_type, nullable
         FROM all_tab_columns
-        WHERE owner = 'CHATBOT_USER'
+        WHERE owner = 'TIF'
     """)
     return cursor.fetchall()
 

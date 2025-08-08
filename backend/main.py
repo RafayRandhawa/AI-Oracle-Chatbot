@@ -129,11 +129,11 @@ def semantic_metadata_search(query:str):
 @app.on_event("startup")
 def preload_embeddings():
     rows = get_metadata_rows()
-    #print(f"rows: {rows}\n\n")
+    print(f"rows: {rows}\n\n")
     formatted = format_metadata_rows(rows)
-    #print(f"formatted: {formatted}\n\n")
+    print(f"formatted: {formatted}\n\n")
     embeddings = embed_texts(formatted, task_type="RETRIEVAL_DOCUMENT")
-    #print(f"embeddings: {embeddings}\n\n")
+    print(f"embeddings: {embeddings}\n\n")
     upsert_metadata(formatted, embeddings)
     print("✅ Oracle metadata embedded and pushed to Pinecone.")
 
