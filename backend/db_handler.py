@@ -123,11 +123,12 @@ def execute_query(query: str, params: dict = None):
             except: pass
 
 
-def extract_db_metadata(force_refresh=False):
+def extract_db_metadata(owner: str = 'TIF', force_refresh=False):
     """
-    Extracts comprehensive database metadata, with optional caching.
+    Extracts comprehensive database metadata for a given owner/schema, with optional caching.
 
     Args:
+        owner (str): The schema owner to extract metadata from (default is 'TIF').
         force_refresh (bool): If True, refreshes the cache even if already loaded.
 
     Returns:
@@ -139,7 +140,7 @@ def extract_db_metadata(force_refresh=False):
         print("Returning cached metadata")
         return _cached_metadata
 
-    print("Extracting metadata from database...")
+    print(f"Extracting metadata from database for owner: {owner}")
     conn = get_connection()
     cursor = conn.cursor()
 
@@ -153,17 +154,19 @@ def extract_db_metadata(force_refresh=False):
                 c.column_name,
                 c.data_type,
                 c.nullable,
-                tc.comments AS column_comment
+                cc.comments AS column_comment
             FROM
-                user_tab_columns c
+                all_tab_columns c
             LEFT JOIN
-                user_col_comments tc
+                all_col_comments cc
             ON
-                c.table_name = tc.table_name AND c.column_name = tc.column_name
+                c.owner = cc.owner AND c.table_name = cc.table_name AND c.column_name = cc.column_name
+            WHERE
+                c.owner = :owner
             ORDER BY
                 c.table_name, c.column_id
         """
-        cursor.execute(column_query)
+        cursor.execute(column_query, {"owner": owner})
         for table_name, column_name, data_type, nullable, col_comment in cursor.fetchall():
             table_name = table_name.upper()
             if table_name not in metadata:
@@ -186,15 +189,15 @@ def extract_db_metadata(force_refresh=False):
                 cols.table_name,
                 cols.column_name
             FROM
-                user_constraints cons
+                all_constraints cons
             JOIN
-                user_cons_columns cols
+                all_cons_columns cols
             ON
-                cons.constraint_name = cols.constraint_name
+                cons.owner = cols.owner AND cons.constraint_name = cols.constraint_name
             WHERE
-                cons.constraint_type = 'P'
+                cons.constraint_type = 'P' AND cons.owner = :owner
         """
-        cursor.execute(pk_query)
+        cursor.execute(pk_query, {"owner": owner})
         for table_name, column_name in cursor.fetchall():
             if table_name in metadata:
                 metadata[table_name]["primary_keys"].append(column_name)
@@ -207,23 +210,23 @@ def extract_db_metadata(force_refresh=False):
                 c_pk.table_name AS referenced_table,
                 b.column_name AS referenced_column
             FROM
-                user_constraints c
+                all_constraints c
             JOIN
-                user_cons_columns a
+                all_cons_columns a
             ON
-                c.constraint_name = a.constraint_name
+                c.owner = a.owner AND c.constraint_name = a.constraint_name
             JOIN
-                user_constraints c_pk
+                all_constraints c_pk
             ON
-                c.r_constraint_name = c_pk.constraint_name
+                c.r_constraint_name = c_pk.constraint_name AND c.r_owner = c_pk.owner
             JOIN
-                user_cons_columns b
+                all_cons_columns b
             ON
-                c_pk.constraint_name = b.constraint_name
+                c_pk.owner = b.owner AND c_pk.constraint_name = b.constraint_name
             WHERE
-                c.constraint_type = 'R'
+                c.constraint_type = 'R' AND c.owner = :owner
         """
-        cursor.execute(fk_query)
+        cursor.execute(fk_query, {"owner": owner})
         for table_name, column_name, ref_table, ref_column in cursor.fetchall():
             if table_name in metadata:
                 metadata[table_name]["foreign_keys"].append({
@@ -240,9 +243,11 @@ def extract_db_metadata(force_refresh=False):
                 table_name,
                 comments
             FROM
-                user_tab_comments
+                all_tab_comments
+            WHERE
+                owner = :owner
         """
-        cursor.execute(table_comments_query)
+        cursor.execute(table_comments_query, {"owner": owner})
         for table_name, comment in cursor.fetchall():
             if table_name in metadata:
                 metadata[table_name]["table_comment"] = comment or ""

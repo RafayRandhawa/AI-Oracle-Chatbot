@@ -9,24 +9,24 @@ genai.configure(api_key=os.getenv('GEMINI_API_KEY'))
 
 def embed_texts(texts: list[str], task_type="RETRIEVAL_DOCUMENT") -> list[list[float]]:
     """
-    Embeds a list of texts using the Gemini API.
-
-    Args:
-        texts: A list of strings to embed.
-        task_type: The task type for the embedding.
-
-    Returns:
-        A list of embeddings, where each embedding is a list of floats.
+    Embeds each text individually using Gemini API (no batching).
+    Returns a list of embedding vectors (list of floats).
     """
-    try:
-        # The model "embedding-001" is now accessible directly. [11]
-        # The genai.embed_content function is a more direct way to get embeddings. [8]
-        result = genai.embed_content(
-            model="models/embedding-001",
-            content=texts,
-            task_type=task_type
-        )
-        return result['embedding']
-    except Exception as e:
-        print(f"An error occurred: {e}")
-        return []
+    vectors = []
+
+    for i, text in enumerate(texts):
+        try:
+            result = genai.embed_content(
+                model="models/embedding-001",
+                content=text,
+                task_type=task_type
+            )
+            if isinstance(result, dict) and "embedding" in result:
+                vectors.append(result["embedding"])
+            else:
+                print(f"[⚠️] Unexpected response at index {i}: {result}")
+        except Exception as e:
+            print(f"[❌] Error embedding text at index {i}: {e}")
+            vectors.append([])
+
+    return vectors
