@@ -1,5 +1,6 @@
 # main.py
-from fastapi import FastAPI, HTTPException
+
+from fastapi import FastAPI, HTTPException, Query
 from pydantic import BaseModel
 from ai_handler import generate_sql_from_prompt
 from db_handler import execute_query,parameterize_query,is_safe_query,extract_db_metadata
@@ -112,23 +113,32 @@ def db_direct(query:str):
 
 
 
+
+class SimilarRequest(BaseModel):
+    query: str
+
 @app.post("/similar-metadata")
-def semantic_metadata_search(query:str):
+def semantic_metadata_search(req: SimilarRequest):
+    if not req.query:
+        raise HTTPException(status_code=400, detail="Missing 'query'")
     
-    if not query:
-        raise HTTPException(status_code=400, detail="Missing 'query' in request body.")
-    
-    user_embedding = embed_texts([query], task_type="RETRIEVAL_QUERY")[0]
+    user_embedding = embed_texts([req.query], task_type="RETRIEVAL_QUERY")[0]
     similar_metadata = query_similar_metadata(user_embedding)
     return {"context": similar_metadata}
 
 
 
 
-
 @app.on_event("startup")
 def preload_embeddings():
-    full_metadata_embedding_pipeline(owner='TIF')
+    # Just warm up DB connection or metadata cache if you want
+    extract_db_metadata(force_refresh=False)
+    print("✅ DB connection & metadata cache initialized. No embeddings done.")
+
+#@app.on_event("startup")
+#def preload_embeddings():
+#    full_metadata_embedding_pipeline(owner='SYSTEM')
+#full_metadata_embedding_pipeline(owner='system')
     # rows = get_metadata_rows()
     # print(f"rows: {rows}\n\n")
     # formatted = format_metadata_rows(rows)
@@ -138,3 +148,14 @@ def preload_embeddings():
     # upsert_metadata(formatted, embeddings)
     # print("✅ Oracle metadata embedded and pushed to Pinecone.")
 
+
+@app.post("/embed-metadata")
+def embed_metadata(owner: str = Query("SYSTEM", description="owner/name for pipeline")):
+    """
+    Trigger the full metadata -> embeddings -> upsert pipeline on demand.
+    """
+    try:
+        full_metadata_embedding_pipeline(owner=owner)
+        return {"success": True, "message": "Embedding pipeline completed"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

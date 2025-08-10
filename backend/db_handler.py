@@ -123,12 +123,12 @@ def execute_query(query: str, params: dict = None):
             except: pass
 
 
-def extract_db_metadata(owner: str = 'TIF', force_refresh=False):
+def extract_db_metadata(owner: str = 'SYSTEM', force_refresh=False):
     """
     Extracts comprehensive database metadata for a given owner/schema, with optional caching.
 
     Args:
-        owner (str): The schema owner to extract metadata from (default is 'TIF').
+        owner (str): The schema owner to extract metadata from (default is 'SYSTEM').
         force_refresh (bool): If True, refreshes the cache even if already loaded.
 
     Returns:
