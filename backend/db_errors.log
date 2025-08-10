@@ -1,1 +1,98 @@
 ERROR:ai_handler:Unexpected error in AI handler: ORA-12637: Packet receive failed
+ERROR:root:Database error:
+Traceback (most recent call last):
+  File "D:\sql agent\AI-Oracle-Chatbot\backend\db_handler.py", line 88, in execute_query
+    cursor.execute(query)
+  File "D:\sql agent\AI-Oracle-Chatbot\backend\venv\Lib\site-packages\oracledb\cursor.py", line 714, in execute
+    impl.execute(self)
+  File "src/oracledb/impl/thick/cursor.pyx", line 320, in oracledb.thick_impl.ThickCursorImpl.execute
+  File "src/oracledb/impl/thick/utils.pyx", line 484, in oracledb.thick_impl._raise_from_odpi
+  File "src/oracledb/impl/thick/utils.pyx", line 474, in oracledb.thick_impl._raise_from_info
+oracledb.exceptions.DatabaseError: ORA-00942: table or view does not exist
+Help: https://docs.oracle.com/error-help/db/ora-00942/
+
+ERROR:ai_handler:Connection error with LM Studio: HTTPConnectionPool(host='localhost', port=1234): Max retries exceeded with url: /v1/chat/completions (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000001CDB1E483B0>: Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it'))
+ERROR:root:Database error:
+Traceback (most recent call last):
+  File "D:\sql agent\AI-Oracle-Chatbot\backend\db_handler.py", line 88, in execute_query
+    cursor.execute(query)
+  File "D:\sql agent\AI-Oracle-Chatbot\backend\venv\Lib\site-packages\oracledb\cursor.py", line 714, in execute
+    impl.execute(self)
+  File "src/oracledb/impl/thick/cursor.pyx", line 320, in oracledb.thick_impl.ThickCursorImpl.execute
+  File "src/oracledb/impl/thick/utils.pyx", line 484, in oracledb.thick_impl._raise_from_odpi
+  File "src/oracledb/impl/thick/utils.pyx", line 474, in oracledb.thick_impl._raise_from_info
+oracledb.exceptions.DatabaseError: ORA-00942: table or view does not exist
+Help: https://docs.oracle.com/error-help/db/ora-00942/
+
+ERROR:root:Database error:
+Traceback (most recent call last):
+  File "D:\sql agent\AI-Oracle-Chatbot\backend\db_handler.py", line 88, in execute_query
+    cursor.execute(query)
+  File "D:\sql agent\AI-Oracle-Chatbot\backend\venv\Lib\site-packages\oracledb\cursor.py", line 714, in execute
+    impl.execute(self)
+  File "src/oracledb/impl/thick/cursor.pyx", line 320, in oracledb.thick_impl.ThickCursorImpl.execute
+  File "src/oracledb/impl/thick/utils.pyx", line 484, in oracledb.thick_impl._raise_from_odpi
+  File "src/oracledb/impl/thick/utils.pyx", line 474, in oracledb.thick_impl._raise_from_info
+oracledb.exceptions.DatabaseError: ORA-00911: invalid character
+Help: https://docs.oracle.com/error-help/db/ora-00911/
+
+ERROR:root:Database error:
+Traceback (most recent call last):
+  File "D:\sql agent\AI-Oracle-Chatbot\backend\db_handler.py", line 88, in execute_query
+    cursor.execute(query)
+  File "D:\sql agent\AI-Oracle-Chatbot\backend\venv\Lib\site-packages\oracledb\cursor.py", line 714, in execute
+    impl.execute(self)
+  File "src/oracledb/impl/thick/cursor.pyx", line 320, in oracledb.thick_impl.ThickCursorImpl.execute
+  File "src/oracledb/impl/thick/utils.pyx", line 484, in oracledb.thick_impl._raise_from_odpi
+  File "src/oracledb/impl/thick/utils.pyx", line 474, in oracledb.thick_impl._raise_from_info
+oracledb.exceptions.DatabaseError: ORA-00942: table or view does not exist
+Help: https://docs.oracle.com/error-help/db/ora-00942/
+
+ERROR:root:Database error:
+Traceback (most recent call last):
+  File "D:\sql agent\AI-Oracle-Chatbot\backend\db_handler.py", line 88, in execute_query
+    cursor.execute(query)
+  File "D:\sql agent\AI-Oracle-Chatbot\backend\venv\Lib\site-packages\oracledb\cursor.py", line 714, in execute
+    impl.execute(self)
+  File "src/oracledb/impl/thick/cursor.pyx", line 320, in oracledb.thick_impl.ThickCursorImpl.execute
+  File "src/oracledb/impl/thick/utils.pyx", line 484, in oracledb.thick_impl._raise_from_odpi
+  File "src/oracledb/impl/thick/utils.pyx", line 474, in oracledb.thick_impl._raise_from_info
+oracledb.exceptions.DatabaseError: ORA-00900: invalid SQL statement
+Help: https://docs.oracle.com/error-help/db/ora-00900/
+
+ERROR:root:Database error:
+Traceback (most recent call last):
+  File "D:\sql agent\AI-Oracle-Chatbot\backend\db_handler.py", line 88, in execute_query
+    cursor.execute(query)
+  File "D:\sql agent\AI-Oracle-Chatbot\backend\venv\Lib\site-packages\oracledb\cursor.py", line 714, in execute
+    impl.execute(self)
+  File "src/oracledb/impl/thick/cursor.pyx", line 320, in oracledb.thick_impl.ThickCursorImpl.execute
+  File "src/oracledb/impl/thick/utils.pyx", line 484, in oracledb.thick_impl._raise_from_odpi
+  File "src/oracledb/impl/thick/utils.pyx", line 474, in oracledb.thick_impl._raise_from_info
+oracledb.exceptions.DatabaseError: ORA-00900: invalid SQL statement
+Help: https://docs.oracle.com/error-help/db/ora-00900/
+
+ERROR:root:Database error:
+Traceback (most recent call last):
+  File "D:\sql agent\AI-Oracle-Chatbot\backend\db_handler.py", line 88, in execute_query
+    cursor.execute(query)
+  File "D:\sql agent\AI-Oracle-Chatbot\backend\venv\Lib\site-packages\oracledb\cursor.py", line 714, in execute
+    impl.execute(self)
+  File "src/oracledb/impl/thick/cursor.pyx", line 320, in oracledb.thick_impl.ThickCursorImpl.execute
+  File "src/oracledb/impl/thick/utils.pyx", line 484, in oracledb.thick_impl._raise_from_odpi
+  File "src/oracledb/impl/thick/utils.pyx", line 474, in oracledb.thick_impl._raise_from_info
+oracledb.exceptions.DatabaseError: ORA-00900: invalid SQL statement
+Help: https://docs.oracle.com/error-help/db/ora-00900/
+
+ERROR:root:Database error:
+Traceback (most recent call last):
+  File "D:\sql agent\AI-Oracle-Chatbot\backend\db_handler.py", line 88, in execute_query
+    cursor.execute(query)
+  File "D:\sql agent\AI-Oracle-Chatbot\backend\venv\Lib\site-packages\oracledb\cursor.py", line 714, in execute
+    impl.execute(self)
+  File "src/oracledb/impl/thick/cursor.pyx", line 320, in oracledb.thick_impl.ThickCursorImpl.execute
+  File "src/oracledb/impl/thick/utils.pyx", line 484, in oracledb.thick_impl._raise_from_odpi
+  File "src/oracledb/impl/thick/utils.pyx", line 474, in oracledb.thick_impl._raise_from_info
+oracledb.exceptions.DatabaseError: ORA-00900: invalid SQL statement
+Help: https://docs.oracle.com/error-help/db/ora-00900/
+

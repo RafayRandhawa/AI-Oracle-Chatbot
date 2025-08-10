@@ -9,7 +9,7 @@ def get_metadata_rows():
     cursor.execute("""
         SELECT table_name, column_name, data_type, nullable
         FROM all_tab_columns
-        WHERE owner = 'TIF'
+        WHERE owner = 'SYSTEM'
     """)
     return cursor.fetchall()
 
@@ -62,7 +62,7 @@ def build_meta_chunks_from_metadata(metadata: dict, embeddings: list[list[float]
             i += 1
     return chunks
 
-def full_metadata_embedding_pipeline(owner="TIF"):
+def full_metadata_embedding_pipeline(owner="SYSTEM"):
     # 1. Extract metadata
     metadata = extract_db_metadata(owner=owner)
 
