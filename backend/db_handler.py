@@ -102,8 +102,7 @@ def execute_query(query: str, params: dict = None):
             "error": "Database Error",
             "message": str(error_obj.message),
             "code": error_obj.code,
-            "query": query,
-            "params": params
+            "query": query
         }
 
     except Exception as e:
