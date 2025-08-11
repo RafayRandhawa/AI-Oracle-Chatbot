@@ -6,9 +6,9 @@ load_dotenv()
 
 
 # Initialize Pinecone
-pc = Pinecone(api_key='pcsk_2zM3GB_EEG9zdqHWBne9D8bxyLSwSHUo5z947ep85VJvaxZ7WUDV4VJMHmeNWk3agQAyFQ')
+pc = Pinecone(os.getenv('PINECONE_API_KEY'))
 
-index_name = "oracle-metadata"
+index_name = "oracle-metadata-laibaver"
 
 # Create index if it doesn't exist
 if index_name not in pc.list_indexes().names():
@@ -25,27 +25,43 @@ if index_name not in pc.list_indexes().names():
 index = pc.Index(index_name)
 
 # Upsert metadata
-def upsert_metadata(texts, vectors):
+def upsert_metadata(meta_chunks: list[dict], batch_size: int = 300):
     upserts = []
-    for i in range(len(texts)):
-        _id = f"meta-{i}"
-        _vec = vectors[i]
-        _meta = {"text": texts[i]}
+    total_upserted = 0
 
-        # Check validity
+    for chunk in meta_chunks:
+        _id = chunk.get("id")
+        _vec = chunk.get("vector")
+        _meta = chunk.get("metadata")
+
         if not isinstance(_id, str) or not isinstance(_vec, list) or not isinstance(_meta, dict):
-            print(f"[❌] Invalid vector format at index {i}")
+            print(f"[❌] Invalid vector format: {chunk}")
             continue
         if not all(isinstance(x, float) for x in _vec):
-            print(f"[❌] Vector at index {i} contains non-floats")
+            print(f"[❌] Vector for ID {_id} contains non-floats")
             continue
 
         upserts.append((_id, _vec, _meta))
 
-    #print(f"[✅] Prepared {len(upserts)} vectors for upsert")
-    #print("Sample vector:", upserts[0] if upserts else "None")
+        # When batch is full, upsert to Pinecone
+        if len(upserts) == batch_size:
+            index.upsert(vectors=upserts, namespace="default")
+            total_upserted += len(upserts)
+            print(f"[✅] Upserted {len(upserts)} vectors.")
+            upserts = []
 
-    index.upsert(vectors=upserts, namespace="ai oracle metadata")
+    # Upsert any remaining vectors after the loop
+    if upserts:
+        index.upsert(vectors=upserts, namespace="default")
+        total_upserted += len(upserts)
+        print(f"[✅] Upserted remaining {len(upserts)} vectors.")
+
+    if total_upserted == 0:
+        print("[⚠️] No valid vectors to upsert.")
+    else:
+        print(f"[✅] Finished. Total upserted vectors: {total_upserted}")
+
+
 
 
 
@@ -54,6 +70,9 @@ def query_similar_metadata(embedding, top_k=5):
     response = index.query(
         vector=embedding,
         top_k=top_k,
-        include_metadata=True
+        include_metadata=True,
+        namespace="default"
     )
-    return [item["metadata"]["text"] for item in response["matches"]]
+    
+    print(f"Query response: {response}")
+    return [item["metadata"] for item in response.get("matches", [])]
