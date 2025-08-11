@@ -1,17 +1,15 @@
-# main.py
-
 from nt import error
+
+from requests import status_codes
 from fastapi import FastAPI, HTTPException, Query
 from pydantic import BaseModel
 from ai_handler import generate_sql_from_prompt
 from db_handler import execute_query,parameterize_query,is_safe_query,extract_db_metadata
-import ai_handler_alternate
+
 from fastapi.responses import JSONResponse
 from embedder import embed_texts
-from pinecone_utils import upsert_metadata, query_similar_metadata
-from oracle_metadata import full_metadata_embedding_pipeline, get_metadata_rows, format_metadata_rows
-from fastapi import Request
-import requests
+from pinecone_utils import  query_similar_metadata
+from oracle_metadata import full_metadata_embedding_pipeline
 
 
 # Initialize the FastAPI application
@@ -29,10 +27,7 @@ class QueryRequest(BaseModel):
 class QueryResponse(BaseModel):
     generated_sql: str
     results: list | dict  # Could be a list of dicts for SELECT, or a dict for DML/DDL
-
-#class SimilarRequest(BaseModel):
     
-
 
 @app.post("/query", response_model=QueryResponse)
 def query_database(request: QueryRequest):
@@ -51,10 +46,7 @@ def query_database(request: QueryRequest):
         print(f"generated_sql: {generated_sql}\n\n")
         # Optional: If AI fails to generate proper SQL
         if not generated_sql.strip().lower().startswith(("select", "insert", "update" "create")):
-            # generated_sql = ai_handler_alternate(request.prompt)
-            # #Second AI model implemented as a fallback 
-            # if not generated_sql.strip().lower().startswith(("select", "insert", "update", "delete", "create", "alter", "drop","(")):
-            raise HTTPException(status_code=400, detail="AI did not generate a valid SQL query.")
+           raise HTTPException(status_code=400, detail="AI did not generate a valid SQL query.")
         if not is_safe_query(generated_sql):
             return JSONResponse(
             status_code=500,
@@ -109,10 +101,7 @@ def db_direct(query:str):
     else:
         return JSONResponse(
             status_code=500,
-            content={"success": False, "results": None, "not-safe": "The following action is restricted and cannot be performed, inform the user accordingly"})
-
-
-
+            content={"success": False, "results": None, "error": "The following action is restricted and cannot be performed, inform the user accordingly"})
 
 
 class SimilarRequest(BaseModel):
@@ -121,33 +110,21 @@ class SimilarRequest(BaseModel):
 @app.post("/similar-metadata")
 def semantic_metadata_search(req: SimilarRequest):
     if not req.query:
-        raise HTTPException(status_code=400, detail="Missing 'query'")
+        
+        return JSONResponse(
+            status_code=400,
+            content={"success": False, "message": "failed", "error": "Missing Query"}
+         )
     
     user_embedding = embed_texts([req.query], task_type="RETRIEVAL_QUERY")[0]
     similar_metadata = query_similar_metadata(user_embedding)
     return {"context": similar_metadata}
 
 
-
-
 @app.on_event("startup")
 def preload_embeddings():
-    # Just warm up DB connection or metadata cache if you want
     extract_db_metadata(force_refresh=False)
     print("✅ DB connection & metadata cache initialized. No embeddings done.")
-
-#@app.on_event("startup")
-#def preload_embeddings():
-#    full_metadata_embedding_pipeline(owner='SYSTEM')
-#full_metadata_embedding_pipeline(owner='system')
-    # rows = get_metadata_rows()
-    # print(f"rows: {rows}\n\n")
-    # formatted = format_metadata_rows(rows)
-    # print(f"formatted: {formatted}\n\n")
-    # embeddings = embed_texts(formatted, task_type="RETRIEVAL_DOCUMENT")
-    # print(f"embeddings: {embeddings}\n\n")
-    # upsert_metadata(formatted, embeddings)
-    # print("✅ Oracle metadata embedded and pushed to Pinecone.")
 
 
 @app.post("/embed-metadata")
@@ -159,4 +136,6 @@ def embed_metadata(owner: str = Query("TIF", description="owner/name for pipelin
         full_metadata_embedding_pipeline(owner=owner)
         return {"success": True, "message": "Embedding pipeline completed"}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        return JSONResponse(
+            status_code=500,
+            content={"success": False, "message": "failed", "error": "Vector Embeddings cannot be completed at the moment"})

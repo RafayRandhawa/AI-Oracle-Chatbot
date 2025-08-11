@@ -15,7 +15,7 @@ logging.basicConfig(filename="db_errors.log", level=logging.ERROR)
 load_dotenv()
 oracledb.init_oracle_client(lib_dir=os.getenv("INSTANT_CLIENT"))
 
-# Database configuration: replace these with your actual credentials.
+# Database configuration:
 
 # DB_USER = 'chatbot_user'
 # DB_PASSWORD = 'chatbotpass'

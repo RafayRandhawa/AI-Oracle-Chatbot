@@ -35,10 +35,10 @@ def upsert_metadata(meta_chunks: list[dict], batch_size: int = 300):
         _meta = chunk.get("metadata")
 
         if not isinstance(_id, str) or not isinstance(_vec, list) or not isinstance(_meta, dict):
-            print(f"[❌] Invalid vector format: {chunk}")
+            print(f"Invalid vector format: {chunk}")
             continue
         if not all(isinstance(x, float) for x in _vec):
-            print(f"[❌] Vector for ID {_id} contains non-floats")
+            print(f"Vector for ID {_id} contains non-floats")
             continue
 
         upserts.append((_id, _vec, _meta))
@@ -60,9 +60,6 @@ def upsert_metadata(meta_chunks: list[dict], batch_size: int = 300):
         print("[⚠️] No valid vectors to upsert.")
     else:
         print(f"[✅] Finished. Total upserted vectors: {total_upserted}")
-
-
-
 
 
 # Query similar metadata

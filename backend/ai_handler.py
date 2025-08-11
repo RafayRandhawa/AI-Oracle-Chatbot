@@ -19,8 +19,8 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # LM Studio local endpoint
-LM_STUDIO_API_URL = os.getenv("LM_STUDIO_URL", "http://localhost:1234/v1/chat/completions")
-LM_STUDIO_MODEL = os.getenv("LM_STUDIO_MODEL", "TheBloke/sqlcoder2-GGUF")
+LM_STUDIO_API_URL = os.getenv("LM_STUDIO_URL")
+LM_STUDIO_MODEL = os.getenv("LM_STUDIO_MODEL")
 
 def generate_sql_from_prompt(prompt: str) -> str:
     """
