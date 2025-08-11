@@ -1,5 +1,6 @@
 # main.py
 
+from nt import error
 from fastapi import FastAPI, HTTPException, Query
 from pydantic import BaseModel
 from ai_handler import generate_sql_from_prompt
@@ -95,7 +96,7 @@ def db_direct(query:str):
     """
     API endpoint to execute a raw SQL query directly on the database.
     """
-  
+    print(query)
     query,params = parameterize_query(query)
     if(is_safe_query(query)):
         try:
@@ -108,7 +109,7 @@ def db_direct(query:str):
     else:
         return JSONResponse(
             status_code=500,
-            content={"success": False, "results": None, "error": str(e)})
+            content={"success": False, "results": None, "not-safe": "The following action is restricted and cannot be performed, inform the user accordingly"})
 
 
 
@@ -150,7 +151,7 @@ def preload_embeddings():
 
 
 @app.post("/embed-metadata")
-def embed_metadata(owner: str = Query("SYSTEM", description="owner/name for pipeline")):
+def embed_metadata(owner: str = Query("TIF", description="owner/name for pipeline")):
     """
     Trigger the full metadata -> embeddings -> upsert pipeline on demand.
     """
