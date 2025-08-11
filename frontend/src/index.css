@@ -1,1 +1,117 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 220 15% 12%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 220 15% 12%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 15% 12%;
+
+    --primary: 0 72% 50%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 0 0% 98%;
+    --secondary-foreground: 220 15% 20%;
+
+    --muted: 0 0% 96%;
+    --muted-foreground: 220 10% 40%;
+
+    --accent: 0 85% 96%;
+    --accent-foreground: 0 72% 40%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 0 0% 90%;
+    --input: 0 0% 90%;
+    --ring: 0 72% 50%;
+
+    --radius: 0.75rem;
+
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 0 72% 50%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 0 85% 96%;
+    --sidebar-accent-foreground: 0 72% 30%;
+    --sidebar-border: 0 0% 90%;
+    --sidebar-ring: 0 72% 50%;
+
+    /* Chat specific tokens */
+    --chat-user: 0 72% 50%;
+    --chat-user-foreground: 0 0% 100%;
+    --chat-bot: 0 0% 96%;
+    --chat-bot-foreground: 220 15% 12%;
+  }
+
+  .dark {
+    --background: 222 22% 10%;
+    --foreground: 210 40% 98%;
+
+    --card: 222 22% 12%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222 22% 10%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 0 72% 60%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 220 12% 16%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 220 12% 16%;
+    --muted-foreground: 215 20% 65.1%;
+
+    --accent: 0 60% 24%;
+    --accent-foreground: 0 85% 95%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 220 10% 20%;
+    --input: 220 10% 20%;
+    --ring: 0 72% 60%;
+
+    --sidebar-background: 220 15% 8%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 0 72% 60%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 0 60% 24%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 220 10% 20%;
+    --sidebar-ring: 0 72% 60%;
+
+    /* Chat specific tokens */
+    --chat-user: 0 68% 55%;
+    --chat-user-foreground: 0 0% 100%;
+    --chat-bot: 220 12% 20%;
+    --chat-bot-foreground: 210 40% 98%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+@layer utilities {
+  .hover-scale {
+    @apply transition-transform duration-200 hover:scale-105;
+  }
+}
