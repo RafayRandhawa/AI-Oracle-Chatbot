@@ -1,5 +1,6 @@
 # main.py
-from fastapi import FastAPI, HTTPException
+
+from fastapi import FastAPI, HTTPException, Query
 from pydantic import BaseModel
 from ai_handler import generate_sql_from_prompt
 from db_handler import execute_query,parameterize_query,is_safe_query,extract_db_metadata
@@ -7,9 +8,9 @@ import ai_handler_alternate
 from fastapi.responses import JSONResponse
 from embedder import embed_texts
 from pinecone_utils import upsert_metadata, query_similar_metadata
-from oracle_metadata import get_metadata_rows, format_metadata_rows
+from oracle_metadata import full_metadata_embedding_pipeline, get_metadata_rows, format_metadata_rows
 from fastapi import Request
-
+import requests
 
 
 # Initialize the FastAPI application
@@ -27,6 +28,9 @@ class QueryRequest(BaseModel):
 class QueryResponse(BaseModel):
     generated_sql: str
     results: list | dict  # Could be a list of dicts for SELECT, or a dict for DML/DDL
+
+#class SimilarRequest(BaseModel):
+    
 
 
 @app.post("/query", response_model=QueryResponse)
@@ -104,27 +108,54 @@ def db_direct(query:str):
     else:
         return JSONResponse(
             status_code=500,
-            content={"success": False, "data": None, "error": "Query is not safe"})
-        
+            content={"success": False, "results": None, "error": str(e)})
+
+
+
+
+
+class SimilarRequest(BaseModel):
+    query: str
+
+@app.post("/similar-metadata")
+def semantic_metadata_search(req: SimilarRequest):
+    if not req.query:
+        raise HTTPException(status_code=400, detail="Missing 'query'")
+    
+    user_embedding = embed_texts([req.query], task_type="RETRIEVAL_QUERY")[0]
+    similar_metadata = query_similar_metadata(user_embedding)
+    return {"context": similar_metadata}
+
+
+
 
 @app.on_event("startup")
 def preload_embeddings():
-    rows = get_metadata_rows()
-    #print(f"rows: {rows}\n\n")
-    formatted = format_metadata_rows(rows)
-    #print(f"formatted: {formatted}\n\n")
-    embeddings = embed_texts(formatted, task_type="RETRIEVAL_DOCUMENT")
-    #print(f"embeddings: {embeddings}\n\n")
-    upsert_metadata(formatted, embeddings)
-    print("✅ Oracle metadata embedded and pushed to Pinecone.")
+    # Just warm up DB connection or metadata cache if you want
+    extract_db_metadata(force_refresh=False)
+    print("✅ DB connection & metadata cache initialized. No embeddings done.")
 
-@app.post("/similar-metadata")
-def semantic_metadata_search(request: Request):
-    body =  request.json()
-    query = body.get("query")
-    if not query:
-        raise HTTPException(status_code=400, detail="Missing 'query' in request body.")
-    
-    user_embedding = embed_texts([query], task_type="RETRIEVAL_QUERY")[0]
-    similar_metadata = query_similar_metadata(user_embedding)
-    return {"context": similar_metadata}
+#@app.on_event("startup")
+#def preload_embeddings():
+#    full_metadata_embedding_pipeline(owner='SYSTEM')
+#full_metadata_embedding_pipeline(owner='system')
+    # rows = get_metadata_rows()
+    # print(f"rows: {rows}\n\n")
+    # formatted = format_metadata_rows(rows)
+    # print(f"formatted: {formatted}\n\n")
+    # embeddings = embed_texts(formatted, task_type="RETRIEVAL_DOCUMENT")
+    # print(f"embeddings: {embeddings}\n\n")
+    # upsert_metadata(formatted, embeddings)
+    # print("✅ Oracle metadata embedded and pushed to Pinecone.")
+
+
+@app.post("/embed-metadata")
+def embed_metadata(owner: str = Query("SYSTEM", description="owner/name for pipeline")):
+    """
+    Trigger the full metadata -> embeddings -> upsert pipeline on demand.
+    """
+    try:
+        full_metadata_embedding_pipeline(owner=owner)
+        return {"success": True, "message": "Embedding pipeline completed"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
