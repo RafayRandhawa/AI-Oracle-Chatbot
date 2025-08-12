@@ -17,7 +17,7 @@ oracledb.init_oracle_client(lib_dir=os.getenv("INSTANT_CLIENT"))
 
 # Database configuration:
 
-# DB_USER = 'chatbot_user'
+# DB_USER = 'CHATBOT_USER'
 # DB_PASSWORD = 'chatbotpass'
 # DB_DSN = 'localhost/XE'  
 
@@ -123,12 +123,12 @@ def execute_query(query: str, params: dict = None):
             except: pass
 
 
-def extract_db_metadata(owner: str = 'TIF', force_refresh=False):
+def extract_db_metadata(owner: str = 'CHATBOT_USER', force_refresh=False):
     """
     Extracts comprehensive database metadata for a given owner/schema, with optional caching.
 
     Args:
-        owner (str): The schema owner to extract metadata from (default is 'TIF').
+        owner (str): The schema owner to extract metadata from (default is 'CHATBOT_USER').
         force_refresh (bool): If True, refreshes the cache even if already loaded.
 
     Returns:
@@ -325,7 +325,7 @@ def parameterize_query(query: str):
 
     query = re.sub(r"'([^']*)'", replace_string, query)
 
-    # 5️⃣ Replace numbers (not part of identifiers or TO_DATE) → :paramX
+    # 5️⃣ Replace numbers (not part of idenCHATBOT_USERiers or TO_DATE) → :paramX
     def replace_number(match):
         nonlocal param_index
         key = f"param{param_index}"

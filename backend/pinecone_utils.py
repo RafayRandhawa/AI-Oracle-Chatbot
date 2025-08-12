@@ -8,7 +8,7 @@ load_dotenv()
 # Initialize Pinecone
 pc = Pinecone(os.getenv('PINECONE_API_KEY'))
 
-index_name = "oracle-metadata"
+index_name = "chatbot"
 
 # Create index if it doesn't exist
 if index_name not in pc.list_indexes().names():
@@ -45,14 +45,14 @@ def upsert_metadata(meta_chunks: list[dict], batch_size: int = 300):
 
         # When batch is full, upsert to Pinecone
         if len(upserts) == batch_size:
-            index.upsert(vectors=upserts, namespace="ai oracle metadata")
+            index.upsert(vectors=upserts, namespace="chatbot")
             total_upserted += len(upserts)
             print(f"[✅] Upserted {len(upserts)} vectors.")
             upserts = []
 
     # Upsert any remaining vectors after the loop
     if upserts:
-        index.upsert(vectors=upserts, namespace="ai oracle metadata")
+        index.upsert(vectors=upserts, namespace="chatbot")
         total_upserted += len(upserts)
         print(f"[✅] Upserted remaining {len(upserts)} vectors.")
 
@@ -68,7 +68,7 @@ def query_similar_metadata(embedding, top_k=5):
         vector=embedding,
         top_k=top_k,
         include_metadata=True,
-        namespace="ai oracle metadata"
+        namespace="chatbot"
     )
     
     print(f"Query response: {response}")

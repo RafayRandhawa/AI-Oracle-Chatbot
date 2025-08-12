@@ -128,7 +128,7 @@ def preload_embeddings():
 
 
 @app.post("/embed-metadata")
-def embed_metadata(owner: str = Query("TIF", description="owner/name for pipeline")):
+def embed_metadata(owner: str = Query("CHATBOT_USER", description="owner/name for pipeline")):
     """
     Trigger the full metadata -> embeddings -> upsert pipeline on demand.
     """
