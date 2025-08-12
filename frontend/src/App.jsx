@@ -1,35 +1,33 @@
 import React from 'react';
 import { ThemeProvider, useTheme } from './components/theme-context.jsx';
 import ChatUI from './components/chat-ui.jsx';
+import ThemeSwitch from './components/theme-switch.jsx';
 
-function ThemeToggleButton() {
-  const { theme, toggleTheme } = useTheme();
-  return (
-    <button
-      onClick={toggleTheme}
-      className="px-4 py-2 rounded-md font-bold transition-colors
-                 bg-darkAccent text-white hover:bg-red-700 dark:bg-darkAccent"
-    >
-      Switch to {theme === 'dark' ? 'Light' : 'Dark'} Mode
-    </button>
-  );
-}
+function Navbar() {
+  const { theme } = useTheme();
+  const headerBase = 'sticky top-0 z-50 w-full border-b';
+  const headerTheme = theme === 'dark'
+    ? 'bg-[#121212] text-white border-[#2A2A2A]'
+    : 'bg-gray-200 text-black border-gray-200';
 
-function Content() {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center
-                    bg-white text-black dark:bg-darkBg dark:text-white">
-      <h1 className="text-4xl mb-6 dark:text-darkAccent">Hello, Red + Black Dark Mode!</h1>
-      <ThemeToggleButton />
-    </div>
+    <header className={`${headerBase} ${headerTheme}`}>
+      <div className="mx-auto mr-1 max-w-6xl px-4 py-3 flex items-center justify-end">
+        <ThemeSwitch />
+      </div>
+    </header>
   );
 }
 
 export default function App() {
   return (
     <ThemeProvider>
-      <Content />
-      <ChatUI></ChatUI>
+      <div className="min-h-screen flex flex-col">
+        <Navbar />
+        <main className="flex-1">
+          <ChatUI />
+        </main>
+      </div>
     </ThemeProvider>
   );
 }
