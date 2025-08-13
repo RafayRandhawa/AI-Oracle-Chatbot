@@ -5,12 +5,14 @@ from fastapi import FastAPI, HTTPException, Query
 from pydantic import BaseModel
 from ai_handler import generate_sql_from_prompt
 from db_handler import execute_query,parameterize_query,is_safe_query,extract_db_metadata
-
+import os
 from fastapi.responses import JSONResponse
 from embedder import embed_texts
 from pinecone_utils import  query_similar_metadata
 from oracle_metadata import full_metadata_embedding_pipeline
+from dotenv import load_dotenv
 
+load_dotenv()   
 
 # Initialize the FastAPI application
 app = FastAPI(
@@ -128,7 +130,7 @@ def preload_embeddings():
 
 
 @app.post("/embed-metadata")
-def embed_metadata(owner: str = Query("CHATBOT_USER", description="owner/name for pipeline")):
+def embed_metadata(owner: str = Query(os.getenv('DB_USER'), description="owner/name for pipeline")):
     """
     Trigger the full metadata -> embeddings -> upsert pipeline on demand.
     """
