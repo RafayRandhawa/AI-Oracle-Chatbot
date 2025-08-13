@@ -3,21 +3,10 @@ from db_handler import get_connection,extract_db_metadata  # reuse your existing
 from embedder import embed_texts
 from pinecone_utils import upsert_metadata
 import json
-def get_metadata_rows():
-    conn = get_connection()
-    cursor = conn.cursor()
-    cursor.execute("""
-        SELECT table_name, column_name, data_type, nullable
-        FROM all_tab_columns
-        WHERE owner = 'CHATBOT_USER'
-    """)
-    return cursor.fetchall()
+from dotenv import load_dotenv
+import os
+load_dotenv()   
 
-def format_metadata_rows(rows):
-    return [
-        f"Table: {table}, Column: {column}, Type: {dtype}, Nullable: {nullable}"
-        for table, column, dtype, nullable in rows
-    ]
 
 
 def build_meta_chunks_from_metadata(metadata: dict, embeddings: list[list[float]]) -> list[dict]:
@@ -62,7 +51,7 @@ def build_meta_chunks_from_metadata(metadata: dict, embeddings: list[list[float]
             i += 1
     return chunks
 
-def full_metadata_embedding_pipeline(owner="CHATBOT_USER"):
+def full_metadata_embedding_pipeline(owner=os.getenv('DB_USER')):
     # 1. Extract metadata
     metadata = extract_db_metadata(owner=owner)
 

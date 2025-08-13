@@ -123,12 +123,12 @@ def execute_query(query: str, params: dict = None):
             except: pass
 
 
-def extract_db_metadata(owner: str = 'CHATBOT_USER', force_refresh=False):
+def extract_db_metadata(owner: str = 'TIS', force_refresh=False):
     """
     Extracts comprehensive database metadata for a given owner/schema, with optional caching.
 
     Args:
-        owner (str): The schema owner to extract metadata from (default is 'CHATBOT_USER').
+        owner (str): The schema owner to extract metadata from (default is 'TIS').
         force_refresh (bool): If True, refreshes the cache even if already loaded.
 
     Returns:

@@ -106,3 +106,41 @@ Traceback (most recent call last):
 oracledb.exceptions.DatabaseError: ORA-00933: SQL command not properly ended
 Help: https://docs.oracle.com/error-help/db/ora-00933/
 
+ERROR:root:Database error:
+Traceback (most recent call last):
+  File "E:\AI-Oracle-Chatbot\backend\db_handler.py", line 88, in execute_query
+    cursor.execute(query)
+    ~~~~~~~~~~~~~~^^^^^^^
+  File "E:\AI-Oracle-Chatbot\backend\venv\Lib\site-packages\oracledb\cursor.py", line 708, in execute
+    impl.execute(self)
+    ~~~~~~~~~~~~^^^^^^
+  File "src/oracledb/impl/thick/cursor.pyx", line 318, in oracledb.thick_impl.ThickCursorImpl.execute
+  File "src/oracledb/impl/thick/utils.pyx", line 484, in oracledb.thick_impl._raise_from_odpi
+  File "src/oracledb/impl/thick/utils.pyx", line 474, in oracledb.thick_impl._raise_from_info
+oracledb.exceptions.DatabaseError: ORA-00933: SQL command not properly ended
+Help: https://docs.oracle.com/error-help/db/ora-00933/
+
+ERROR:root:Database error:
+Traceback (most recent call last):
+  File "E:\AI-Oracle-Chatbot\backend\db_handler.py", line 88, in execute_query
+    cursor.execute(query)
+    ~~~~~~~~~~~~~~^^^^^^^
+  File "E:\AI-Oracle-Chatbot\backend\venv\Lib\site-packages\oracledb\cursor.py", line 708, in execute
+    impl.execute(self)
+    ~~~~~~~~~~~~^^^^^^
+  File "src/oracledb/impl/thick/cursor.pyx", line 318, in oracledb.thick_impl.ThickCursorImpl.execute
+  File "src/oracledb/impl/thick/utils.pyx", line 484, in oracledb.thick_impl._raise_from_odpi
+  File "src/oracledb/impl/thick/utils.pyx", line 474, in oracledb.thick_impl._raise_from_info
+oracledb.exceptions.DatabaseError: ORA-00942: table or view does not exist
+Help: https://docs.oracle.com/error-help/db/ora-00942/
+
+WARNING:urllib3.connectionpool:Retrying (JitterRetry(total=4, connect=None, read=None, redirect=None, status=None)) after connection broken by 'ConnectionAbortedError(10053, 'An established connection was aborted by the software in your host machine', None, 10053, None)': /vectors/upsert
+WARNING:urllib3.connectionpool:Retrying (JitterRetry(total=3, connect=None, read=None, redirect=None, status=None)) after connection broken by 'ConnectionAbortedError(10053, 'An established connection was aborted by the software in your host machine', None, 10053, None)': /vectors/upsert
+WARNING:urllib3.connectionpool:Retrying (JitterRetry(total=2, connect=None, read=None, redirect=None, status=None)) after connection broken by 'ConnectionAbortedError(10053, 'An established connection was aborted by the software in your host machine', None, 10053, None)': /vectors/upsert
+WARNING:urllib3.connectionpool:Retrying (JitterRetry(total=1, connect=None, read=None, redirect=None, status=None)) after connection broken by 'ConnectionAbortedError(10053, 'An established connection was aborted by the software in your host machine', None, 10053, None)': /vectors/upsert
+WARNING:urllib3.connectionpool:Retrying (JitterRetry(total=0, connect=None, read=None, redirect=None, status=None)) after connection broken by 'ConnectionAbortedError(10053, 'An established connection was aborted by the software in your host machine', None, 10053, None)': /vectors/upsert
+WARNING:urllib3.connectionpool:Retrying (JitterRetry(total=4, connect=None, read=None, redirect=None, status=None)) after connection broken by 'ConnectionAbortedError(10053, 'An established connection was aborted by the software in your host machine', None, 10053, None)': /vectors/upsert
+WARNING:urllib3.connectionpool:Retrying (JitterRetry(total=3, connect=None, read=None, redirect=None, status=None)) after connection broken by 'ConnectionAbortedError(10053, 'An established connection was aborted by the software in your host machine', None, 10053, None)': /vectors/upsert
+WARNING:urllib3.connectionpool:Retrying (JitterRetry(total=2, connect=None, read=None, redirect=None, status=None)) after connection broken by 'ConnectionAbortedError(10053, 'An established connection was aborted by the software in your host machine', None, 10053, None)': /vectors/upsert
+WARNING:urllib3.connectionpool:Retrying (JitterRetry(total=1, connect=None, read=None, redirect=None, status=None)) after connection broken by 'ConnectionAbortedError(10053, 'An established connection was aborted by the software in your host machine', None, 10053, None)': /vectors/upsert
+WARNING:urllib3.connectionpool:Retrying (JitterRetry(total=0, connect=None, read=None, redirect=None, status=None)) after connection broken by 'ConnectionAbortedError(10053, 'An established connection was aborted by the software in your host machine', None, 10053, None)': /vectors/upsert
