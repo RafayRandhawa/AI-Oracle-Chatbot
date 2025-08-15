@@ -15,23 +15,10 @@ logging.basicConfig(filename="db_errors.log", level=logging.ERROR)
 load_dotenv()
 oracledb.init_oracle_client(lib_dir=os.getenv("INSTANT_CLIENT"))
 
-# Database configuration:
-
-# DB_USER = 'CHATBOT_USER'
-# DB_PASSWORD = 'chatbotpass'
-# DB_DSN = 'localhost/XE'  
-
-# DSN format is 'hostname/SERVICE_NAME' for Oracle XE.
-
-
-#Test Server Credentials
-
 
 DB_USER = os.getenv('DB_USER')
 DB_PASSWORD = os.getenv('DB_PASSWORD')
 DB_DSN = os.getenv('DB_DSN')
-
-
 
 
 def get_connection():
@@ -90,7 +77,19 @@ def execute_query(query: str, params: dict = None):
         if cursor.description:  # SELECT
             columns = [col[0] for col in cursor.description]
             rows = cursor.fetchall()
-            return [dict(zip(columns, row)) for row in rows]
+            result = []
+            
+            for row in rows:                         #Resolved issue with LOBs here 
+                # Process each row, handling LOBs if present
+                processed_row = {}
+                for col, value in zip(columns, row):
+                    if isinstance(value, oracledb.LOB):
+                        processed_row[col] = value.read()
+                    else:
+                        processed_row[col] = value 
+                result.append(processed_row)    
+
+            return result
         else:  # DML / DDL
             conn.commit()
             return {"message": "Query executed successfully"}
@@ -123,7 +122,7 @@ def execute_query(query: str, params: dict = None):
             except: pass
 
 
-def extract_db_metadata(owner: str = 'TIS', force_refresh=False):
+def extract_db_metadata(owner: str = 'chatbot_user', force_refresh=False):
     """
     Extracts comprehensive database metadata for a given owner/schema, with optional caching.
 
@@ -325,7 +324,7 @@ def parameterize_query(query: str):
 
     query = re.sub(r"'([^']*)'", replace_string, query)
 
-    # 5️⃣ Replace numbers (not part of idenCHATBOT_USERiers or TO_DATE) → :paramX
+    # 5️⃣ Replace numbers (not part of identifiers or TO_DATE) → :paramX
     def replace_number(match):
         nonlocal param_index
         key = f"param{param_index}"
