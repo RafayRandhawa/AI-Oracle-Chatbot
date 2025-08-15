@@ -1,6 +1,6 @@
 // AuthContext.jsx
-import React, { createContext, useState } from "react";
-
+import React, { createContext, useState,useContext } from "react";
+import { loginUser } from "../services/authService";
 // Create the AuthContext to share auth state globally
 export const AuthContext = createContext();
 
@@ -10,10 +10,22 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(null); // Stores JWT token
 
   // Login function - stores user and token
-  const login = (username, token) => {
-    setUser({ username });
-    setToken(token);
-    localStorage.setItem("token", token); // Persist token across refreshes
+  const login = async (email, password) => {
+    console.log("Attempting login with:", email, password);
+    
+    const data = await loginUser(email, password);
+    if (!data || data.message != "Login successful") {
+      throw new Error("Invalid response from server");
+    }
+    if(data && data.message === "Login Failed") {
+      alert("Invalid username or password");
+      return null; // Return null if login fails
+    }
+    setUser(data.user);       // Save user data
+    setToken(data.access_token); // Save JWT token
+    console.log("User logged in:", email);
+    
+    return email;
   };
 
   // Logout function - clears stored data
@@ -29,3 +41,5 @@ export const AuthProvider = ({ children }) => {
     </AuthContext.Provider>
   );
 };
+
+export const useAuth = () => useContext(AuthContext);

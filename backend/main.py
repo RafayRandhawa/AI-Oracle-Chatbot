@@ -1,7 +1,8 @@
 from nt import error
 from auth.auth_routes import auth_router
 from requests import status_codes
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Query, Request
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from ai_handler import generate_sql_from_prompt
 from db_handler import execute_query,parameterize_query,is_safe_query,extract_db_metadata
@@ -21,6 +22,19 @@ app = FastAPI(
     version="1.0.0"
 )
 app.include_router(auth_router, prefix="/auth", tags=["Authentication"])
+
+origins = [
+    "http://localhost:5173",   # Front
+    "http://localhost:5678",  # N8N
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,  #Change this to specific origins in production
+    allow_credentials=True,
+    allow_methods=["*"],  # or list specific methods like ["GET", "POST"]
+    allow_headers=["*"],  # or list specific headers
+)
 # Define a Pydantic model for the expected input structure from the frontend
 class QueryRequest(BaseModel):
     prompt: str  # This is the user prompt (natural language question)
@@ -142,3 +156,4 @@ def embed_metadata(owner: str = Query(os.getenv('DB_USER'), description="owner/n
         return JSONResponse(
             status_code=500,
             content={"success": False, "message": "failed", "error": "Vector Embeddings cannot be completed at the moment"})
+

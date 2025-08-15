@@ -40,11 +40,11 @@ def create_tokens(user_id: int):
 
 def authenticate_user(username: str, password: str):
     conn = get_connection()
-    user = conn.execute("SELECT * FROM users WHERE username = ?", (username,)).fetchone()
+    user = conn.cursor().execute("SELECT id,username,password_hash FROM users WHERE username = :1", (username,)).fetchone()
     conn.close()
 
-    if user and verify_password(password, user["password"]):
-        return {"id": user["id"], "username": user["username"]}
+    if user and verify_password(password, user[2]):
+        return {"id": user[0], "username": user[1]}
     return None
 
 def login_service(username: str, password: str):

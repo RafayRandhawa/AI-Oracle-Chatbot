@@ -6,9 +6,17 @@ export async function loginUser(username, password) {
     const res = await axios.post(
       "http://localhost:8000/auth/login",
       { username, password },
-      { withCredentials: true }
+      { withCredentials: true,
+        validateStatus: () => true
+       }
     );
-    return res.data; // { user: {...} }
+    if(res.status === 401) {
+      alert("Invalid username or password");
+      return { message: "Login failed" };
+    }
+    console.log("Login response:", res.data);
+    return res.data;
+    
   } catch (error) {
     const detail = error?.response?.data?.detail || error?.message || "Login failed";
     throw new Error(detail);
