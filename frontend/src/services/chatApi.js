@@ -17,10 +17,15 @@ const N8N_URL ='http://localhost:5678/webhook-test/03e650c2-18be-4c37-903a-4e99b
  * - If the shape is unknown, we stringify it so you still see something useful.
  * - Errors are thrown with a readable message for the UI to toast/display.
  */
-export async function sendToN8n(userMessage) {
+export async function sendToN8n(userMessage, token) {
   try {
-    
-    const res = await axios.post(N8N_URL, { message: userMessage });
+    console.log("token to n8n", token)
+    const res = await axios.post(N8N_URL, { message: userMessage, 
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token["access_token"]}` // if needed
+      },
+    });
     const data = res?.data[0];
     console.log(data)
     // Normalize likely shapes returned by n8n
