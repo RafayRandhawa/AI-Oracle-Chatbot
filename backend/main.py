@@ -1,5 +1,5 @@
 from nt import error
-
+from auth.auth_routes import auth_router
 from requests import status_codes
 from fastapi import FastAPI, HTTPException, Query
 from pydantic import BaseModel
@@ -20,7 +20,7 @@ app = FastAPI(
     description="Converts user prompts into SQL queries, executes them on Oracle DB, and returns the results.",
     version="1.0.0"
 )
-
+app.include_router(auth_router, prefix="/auth", tags=["Authentication"])
 # Define a Pydantic model for the expected input structure from the frontend
 class QueryRequest(BaseModel):
     prompt: str  # This is the user prompt (natural language question)
@@ -30,7 +30,10 @@ class QueryResponse(BaseModel):
     generated_sql: str
     results: list | dict  # Could be a list of dicts for SELECT, or a dict for DML/DDL
     
-
+class SimilarRequest(BaseModel):
+    query: str
+    
+    
 @app.post("/query", response_model=QueryResponse)
 def query_database(request: QueryRequest):
     """
@@ -95,6 +98,7 @@ def db_direct(query:str):
     if(is_safe_query(query)):
         try:
             db_result = execute_query(query=query, params=params)
+            
             return {"success": True, 'results': query,  "results": db_result}
         except Exception as e:
             return JSONResponse(
@@ -105,9 +109,6 @@ def db_direct(query:str):
             status_code=500,
             content={"success": False, "results": None, "error": "The following action is restricted and cannot be performed, inform the user accordingly"})
 
-
-class SimilarRequest(BaseModel):
-    query: str
 
 @app.post("/similar-metadata")
 def semantic_metadata_search(req: SimilarRequest):
