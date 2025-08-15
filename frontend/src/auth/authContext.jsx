@@ -22,7 +22,7 @@ export const AuthProvider = ({ children }) => {
       return null; // Return null if login fails
     }
     setUser(data.user);       // Save user data
-    setToken(data.access_token); // Save JWT token
+    setToken(data.token); // Save JWT token
     console.log("User logged in:", email);
     
     return email;

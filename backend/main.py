@@ -1,7 +1,7 @@
 from nt import error
 from auth.auth_routes import auth_router
 from requests import status_codes
-from fastapi import FastAPI, HTTPException, Query, Request
+from fastapi import FastAPI, HTTPException, Query, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from ai_handler import generate_sql_from_prompt
@@ -12,7 +12,7 @@ from embedder import embed_texts
 from pinecone_utils import  query_similar_metadata
 from oracle_metadata import full_metadata_embedding_pipeline
 from dotenv import load_dotenv
-
+from auth.auth_service import get_current_user_from_cookie
 load_dotenv()   
 
 # Initialize the FastAPI application
@@ -30,19 +30,19 @@ origins = [
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,  #Change this to specific origins in production
+    allow_origins=origins,  
     allow_credentials=True,
-    allow_methods=["*"],  # or list specific methods like ["GET", "POST"]
-    allow_headers=["*"],  # or list specific headers
+    allow_methods=["*"], 
+    allow_headers=["*"],  
 )
 # Define a Pydantic model for the expected input structure from the frontend
 class QueryRequest(BaseModel):
-    prompt: str  # This is the user prompt (natural language question)
+    prompt: str  # This is the user prompt 
 
-# Define a Pydantic model for the response (optional but good practice)
+# Define a Pydantic model for the response 
 class QueryResponse(BaseModel):
     generated_sql: str
-    results: list | dict  # Could be a list of dicts for SELECT, or a dict for DML/DDL
+    results: list | dict  
     
 class SimilarRequest(BaseModel):
     query: str
@@ -103,7 +103,7 @@ def refresh_metadata():
 
 
 @app.get("/db-direct")
-def db_direct(query:str):
+def db_direct(query:str, user=Depends(get_current_user_from_cookie)):
     """
     API endpoint to execute a raw SQL query directly on the database.
     """

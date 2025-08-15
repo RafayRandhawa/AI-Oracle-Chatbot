@@ -7,7 +7,7 @@ import InputArea from "./input-area";
 import { useTheme } from "./theme-context";
 import { sendToN8n } from "../services/chatApi";
 import remarkGfm from "remark-gfm"; // Enable GitHub-flavored markdown (tables, etc.)
-
+import { useAuth } from "../auth/authContext"; // For authentication context
 export default function ChatUI() {
   // Messages shown in the chat. We persist them in localStorage to keep
   // history across refreshes.
@@ -27,7 +27,8 @@ export default function ChatUI() {
   // Read current theme so we can apply theme-aware classes without relying
   // solely on Tailwind dark: classes.
   const { theme } = useTheme();
-
+ 
+const { user, token } = useAuth(); // Get current user from auth context
   // Persist chat history and auto-scroll when messages update.
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -54,7 +55,7 @@ export default function ChatUI() {
 
     try {
       // 3) Call your n8n webhook to get markdown back.
-      const markdown = await sendToN8n(userMessage.content);
+      const markdown = await sendToN8n(userMessage.content,token);
 
       // 4) Replace the placeholder assistant message with the markdown.
       setMessages((prev) => {

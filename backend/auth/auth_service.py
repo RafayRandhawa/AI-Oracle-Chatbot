@@ -4,7 +4,7 @@ from jose import jwt
 from passlib.context import CryptContext
 from dotenv import load_dotenv
 import os
-
+from fastapi import Request,HTTPException,status
 # Load environment variables from .env file
 load_dotenv()
 
@@ -51,10 +51,31 @@ def login_service(username: str, password: str):
     user = authenticate_user(username, password)
     if not user:
         return None
-
+    print(f"User {user} authenticated successfully.")
     access_token, refresh_token = create_tokens(user["id"])
     return {
         "access_token": access_token,
         "refresh_token": refresh_token,
         "token_type": "bearer"
     }
+
+def get_current_user_from_cookie(request: Request):
+    token = request.cookies.get("auth_token")
+    
+    if not token:
+        auth_header = request.headers.get("Authorization")
+        if auth_header and auth_header.startswith("Bearer "):
+            token = auth_header.split(" ", 1)[1]
+            
+    if not token:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    try:
+        payload = jwt.decode(token,os.getenv("JWT_SECRET"), algorithms=[os.getenv("JWT_ALGORITHM")])
+        user_id = payload.get("sub")
+        if user_id is None:
+            raise HTTPException(status_code=401, detail="Invalid Token")
+        print(f"User ID from token: {user_id}")
+        return {"id": user_id}
+    except jwt.JWTError:    
+        raise HTTPException(status_code=401, detail="Invalid Token")

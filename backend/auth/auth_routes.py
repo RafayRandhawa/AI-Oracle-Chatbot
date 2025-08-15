@@ -22,7 +22,7 @@ def login(request: LoginRequest):
     if not token:
         raise HTTPException(status_code=401, detail="Invalid username or password")
    
-    response = JSONResponse(content={"message": "Login successful"})
+    response = JSONResponse(content={"message": "Login successful", "token":token})
     response.set_cookie(
         key="auth_token",
         value=token,
