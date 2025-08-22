@@ -144,3 +144,36 @@ WARNING:urllib3.connectionpool:Retrying (JitterRetry(total=3, connect=None, read
 WARNING:urllib3.connectionpool:Retrying (JitterRetry(total=2, connect=None, read=None, redirect=None, status=None)) after connection broken by 'ConnectionAbortedError(10053, 'An established connection was aborted by the software in your host machine', None, 10053, None)': /vectors/upsert
 WARNING:urllib3.connectionpool:Retrying (JitterRetry(total=1, connect=None, read=None, redirect=None, status=None)) after connection broken by 'ConnectionAbortedError(10053, 'An established connection was aborted by the software in your host machine', None, 10053, None)': /vectors/upsert
 WARNING:urllib3.connectionpool:Retrying (JitterRetry(total=0, connect=None, read=None, redirect=None, status=None)) after connection broken by 'ConnectionAbortedError(10053, 'An established connection was aborted by the software in your host machine', None, 10053, None)': /vectors/upsert
+WARNING:urllib3.connectionpool:Retrying (JitterRetry(total=4, connect=None, read=None, redirect=None, status=None)) after connection broken by 'SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1000)'))': /indexes
+WARNING:urllib3.connectionpool:Retrying (JitterRetry(total=3, connect=None, read=None, redirect=None, status=None)) after connection broken by 'SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1000)'))': /indexes
+ERROR:root:Unexpected error:
+Traceback (most recent call last):
+  File "D:\sql agent\AI-Oracle-Chatbot\backend\db_handler.py", line 66, in execute_query
+    conn = connect_with_retry()
+           ^^^^^^^^^^^^^^^^^^
+NameError: name 'connect_with_retry' is not defined
+
+ERROR:root:Database error:
+Traceback (most recent call last):
+  File "D:\sql agent\AI-Oracle-Chatbot\backend\db_handler.py", line 76, in execute_query
+    cursor.execute(query)
+  File "D:\sql agent\AI-Oracle-Chatbot\backend\venv\Lib\site-packages\oracledb\cursor.py", line 714, in execute
+    impl.execute(self)
+  File "src/oracledb/impl/thick/cursor.pyx", line 320, in oracledb.thick_impl.ThickCursorImpl.execute
+  File "src/oracledb/impl/thick/utils.pyx", line 484, in oracledb.thick_impl._raise_from_odpi
+  File "src/oracledb/impl/thick/utils.pyx", line 474, in oracledb.thick_impl._raise_from_info
+oracledb.exceptions.DatabaseError: ORA-00933: SQL command not properly ended
+Help: https://docs.oracle.com/error-help/db/ora-00933/
+
+ERROR:root:Database error:
+Traceback (most recent call last):
+  File "D:\sql agent\AI-Oracle-Chatbot\backend\db_handler.py", line 92, in execute_query
+    cursor.execute(query)
+  File "D:\sql agent\AI-Oracle-Chatbot\backend\venv\Lib\site-packages\oracledb\cursor.py", line 714, in execute
+    impl.execute(self)
+  File "src/oracledb/impl/thick/cursor.pyx", line 320, in oracledb.thick_impl.ThickCursorImpl.execute
+  File "src/oracledb/impl/thick/utils.pyx", line 484, in oracledb.thick_impl._raise_from_odpi
+  File "src/oracledb/impl/thick/utils.pyx", line 474, in oracledb.thick_impl._raise_from_info
+oracledb.exceptions.DatabaseError: ORA-00933: SQL command not properly ended
+Help: https://docs.oracle.com/error-help/db/ora-00933/
+

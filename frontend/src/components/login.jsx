@@ -1,27 +1,44 @@
 // src/components/Login.jsx
 import React, { useState } from "react";
 import { useTheme } from "./theme-context";
-import { useAuth } from "../auth/authContext";
 import { useNavigate } from "react-router-dom";
 
 const Login = () => {
   const { theme } = useTheme();
-  const { login } = useAuth();
   const navigate = useNavigate();
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+const handleLogin = async (e) => {
+  e.preventDefault();
 
-    const user = await login(username, password);
-    if (user) {
-      navigate("/chat");
+  try {
+    const res = await // after workflow is activated
+fetch("http://localhost:5678/webhook/login", { 
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ username, password })
+});
+  
+
+    const data = await res.json();
+    console.log("Response from n8n:", data);
+
+    // Access n8n response properly
+    const result = data[0]?.json;
+
+    if (result?.success) {
+      alert("Login successful!");
+      navigate("/chat"); // or however you redirect
     } else {
-      alert("Invalid credentials");
+      alert(result?.message || "Error logging in");
     }
-  };
+  } catch (err) {
+    console.error("Login error:", err);
+    alert("Something went wrong");
+  }
+};
 
   const containerClasses = `flex flex-col items-center justify-center min-h-screen ${
     theme === "dark" ? "bg-[#121212] text-white" : "bg-white text-black"
@@ -47,7 +64,7 @@ const Login = () => {
         }`}
       >
         <h2 className="text-2xl font-bold mb-6 text-center">Login</h2>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleLogin} className="space-y-4">
           <div>
             <label htmlFor="username" className="block mb-1">
               Username
