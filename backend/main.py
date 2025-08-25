@@ -11,6 +11,7 @@ from embedder import embed_texts
 from pinecone_utils import  query_similar_metadata
 from oracle_metadata import full_metadata_embedding_pipeline
 from dotenv import load_dotenv
+import oracledb
 
 load_dotenv()   
 
@@ -85,6 +86,7 @@ def refresh_metadata():
     return {"message": "Metadata refreshed", "metadata": metadata}
 
 
+
 @app.get("/db-direct")
 def db_direct(query:str):
     """
@@ -112,21 +114,60 @@ class SimilarRequest(BaseModel):
 @app.post("/similar-metadata")
 def semantic_metadata_search(req: SimilarRequest):
     if not req.query:
-        
         return JSONResponse(
             status_code=400,
             content={"success": False, "message": "failed", "error": "Missing Query"}
-         )
+        )
     
-    user_embedding = embed_texts([req.query], task_type="RETRIEVAL_QUERY")[0]
-    similar_metadata = query_similar_metadata(user_embedding)
-    return {"context": similar_metadata}
-
+    try:
+        user_embedding = embed_texts([req.query], task_type="RETRIEVAL_QUERY")[0]
+        similar_metadata = query_similar_metadata(user_embedding)
+        
+        # Format the response
+        formatted_results = []
+        for item in similar_metadata:
+            # Table-level result
+            if "column_count" in item:
+                formatted_results.append({
+                    "type": "table",
+                    "table": item.get("table", ""),
+                    "score": item.get("score", 0),
+                    "description": item.get("table_comment", ""),
+                    "column_count": item.get("column_count", 0),
+                    "primary_keys": item.get("primary_keys", []),
+                    "foreign_keys": item.get("foreign_keys", []),
+                    "columns": item.get("columns", [])
+                })
+            # Column-level result
+            elif "column" in item:
+                formatted_results.append({
+                    "type": "column",
+                    "table": item.get("table", ""),
+                    "column": item.get("column", ""),
+                    "score": item.get("score", 0),
+                    "data_type": item.get("type", ""),
+                    "is_primary_key": item.get("is_primary_key", False),
+                    "is_foreign_key": item.get("is_foreign_key", False),
+                    "foreign_key_ref": item.get("foreign_key_ref", "")
+                })
+            # Raw metadata (fallback)
+            else:
+                formatted_results.append(item)
+        
+        return {"context": formatted_results}
+    
+    except Exception as e:
+        print(f"Error in semantic search: {e}")
+        return JSONResponse(
+            status_code=500,
+            content={"success": False, "message": "failed", "error": str(e)}
+        )
+ 
 
 @app.on_event("startup")
 def preload_embeddings():
-    extract_db_metadata(force_refresh=False)
-    print("✅ DB connection & metadata cache initialized. No embeddings done.")
+    metadata = extract_db_metadata(force_refresh=False)
+    print(f"✅ DB connection & metadata cache initialized. Found {len(metadata)} tables. No embeddings done.")
 
 
 @app.post("/embed-metadata")
@@ -135,9 +176,35 @@ def embed_metadata(owner: str = Query(os.getenv('DB_USER'), description="owner/n
     Trigger the full metadata -> embeddings -> upsert pipeline on demand.
     """
     try:
+        # Force refresh the cache to get fresh metadata
+        metadata = extract_db_metadata(owner=owner, force_refresh=True)
+        
+        if not metadata:
+            return JSONResponse(
+                status_code=400,
+                content={
+                    "success": False, 
+                    "message": "No metadata extracted from database",
+                    "details": f"Owner '{owner}' has tables but metadata extraction failed. Check server logs."
+                }
+            )
+        
+        print(f"📊 Starting embedding pipeline for {len(metadata)} tables")
+        # Log the tables we found
+        for table_name in metadata.keys():
+            print(f"   - {table_name}")
+            
         full_metadata_embedding_pipeline(owner=owner)
-        return {"success": True, "message": "Embedding pipeline completed"}
+        return {
+            "success": True, 
+            "message": f"Embedding pipeline completed for {len(metadata)} tables",
+            "tables_processed": len(metadata),
+            "table_names": list(metadata.keys())
+        }
     except Exception as e:
+        print(f"❌ Error in embed-metadata endpoint: {e}")
+        import traceback
+        traceback.print_exc()
         return JSONResponse(
             status_code=500,
-            content={"success": False, "message": "failed", "error": "Vector Embeddings cannot be completed at the moment"})
+            content={"success": False, "message": "failed", "error": str(e)})

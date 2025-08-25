@@ -144,3 +144,19 @@ WARNING:urllib3.connectionpool:Retrying (JitterRetry(total=3, connect=None, read
 WARNING:urllib3.connectionpool:Retrying (JitterRetry(total=2, connect=None, read=None, redirect=None, status=None)) after connection broken by 'ConnectionAbortedError(10053, 'An established connection was aborted by the software in your host machine', None, 10053, None)': /vectors/upsert
 WARNING:urllib3.connectionpool:Retrying (JitterRetry(total=1, connect=None, read=None, redirect=None, status=None)) after connection broken by 'ConnectionAbortedError(10053, 'An established connection was aborted by the software in your host machine', None, 10053, None)': /vectors/upsert
 WARNING:urllib3.connectionpool:Retrying (JitterRetry(total=0, connect=None, read=None, redirect=None, status=None)) after connection broken by 'ConnectionAbortedError(10053, 'An established connection was aborted by the software in your host machine', None, 10053, None)': /vectors/upsert
+ERROR:root:Database error:
+Traceback (most recent call last):
+  File "C:\Users\deski02\AI-Oracle-Chatbot\backend\db_handler.py", line 90, in execute_query
+    cursor.execute(query, params)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\deski02\AI-Oracle-Chatbot\backend\venv\Lib\site-packages\oracledb\cursor.py", line 708, in execute
+    impl.execute(self)
+    ~~~~~~~~~~~~^^^^^^
+  File "src/oracledb/impl/thick/cursor.pyx", line 306, in oracledb.thick_impl.ThickCursorImpl.execute
+  File "src/oracledb/impl/base/cursor.pyx", line 351, in oracledb.base_impl.BaseCursorImpl._perform_binds
+  File "src/oracledb/impl/thick/var.pyx", line 67, in oracledb.thick_impl.ThickVarImpl._bind
+  File "src/oracledb/impl/thick/utils.pyx", line 484, in oracledb.thick_impl._raise_from_odpi
+  File "src/oracledb/impl/thick/utils.pyx", line 474, in oracledb.thick_impl._raise_from_info
+oracledb.exceptions.DatabaseError: ORA-01036: unrecognized bind variable param1 passed to the bind call
+Help: https://docs.oracle.com/error-help/db/ora-01036/
+
