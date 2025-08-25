@@ -1,28 +1,12 @@
 import oracledb
 from db_handler import get_connection,extract_db_metadata  # reuse your existing logic
 from embedder import embed_texts
-from pinecone_utils import upsert_metadata,check_pinecone_connection
+from pinecone_utils import upsert_metadata
 import json
 from dotenv import load_dotenv
 import os
 
 load_dotenv()   
-
-def get_metadata_rows():
-    conn = get_connection()
-    cursor = conn.cursor()
-    cursor.execute("""
-        SELECT table_name, column_name, data_type, nullable
-        FROM all_tab_columns
-        WHERE owner = 'tis'
-    """)
-    return cursor.fetchall()
-
-def format_metadata_rows(rows):
-    return [
-        f"Table: {table}, Column: {column}, Type: {dtype}, Nullable: {nullable}"
-        for table, column, dtype, nullable in rows
-    ]
 
 
 
@@ -111,11 +95,6 @@ and {len(table_meta['foreign_keys'])} foreign key relationship(s)."""
     return chunks
 
 def full_metadata_embedding_pipeline(owner=os.getenv('DB_USER')):
-    # 0. Check Pinecone connection first
-    if not check_pinecone_connection():
-        print("❌ Cannot proceed without Pinecone connection")
-        return
-
     # 1. Extract metadata
     print("📋 Extracting metadata...")
     metadata = extract_db_metadata(owner=owner)
@@ -186,4 +165,3 @@ FOREIGN KEY RELATIONSHIPS:
     # 5. Upsert into Pinecone
     print("🚀 Upserting to Pinecone...")
     upsert_metadata(meta_chunks)
-

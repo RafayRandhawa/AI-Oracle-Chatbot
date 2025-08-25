@@ -1,7 +1,8 @@
 from nt import error
-
+from auth.auth_routes import auth_router
 from requests import status_codes
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Query, Depends
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from ai_handler import generate_sql_from_prompt
 from db_handler import execute_query,parameterize_query,is_safe_query,extract_db_metadata
@@ -11,6 +12,7 @@ from embedder import embed_texts
 from pinecone_utils import  query_similar_metadata
 from oracle_metadata import full_metadata_embedding_pipeline
 from dotenv import load_dotenv
+from auth.auth_service import get_current_user_from_cookie
 import oracledb
 
 load_dotenv()   
@@ -21,17 +23,33 @@ app = FastAPI(
     description="Converts user prompts into SQL queries, executes them on Oracle DB, and returns the results.",
     version="1.0.0"
 )
+app.include_router(auth_router, prefix="/auth", tags=["Authentication"])
 
+origins = [
+    "http://localhost:5173",   # Front
+    "http://localhost:5678",  # N8N
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,  
+    allow_credentials=True,
+    allow_methods=["*"], 
+    allow_headers=["*"],  
+)
 # Define a Pydantic model for the expected input structure from the frontend
 class QueryRequest(BaseModel):
-    prompt: str  # This is the user prompt (natural language question)
+    prompt: str  # This is the user prompt 
 
-# Define a Pydantic model for the response (optional but good practice)
+# Define a Pydantic model for the response 
 class QueryResponse(BaseModel):
     generated_sql: str
-    results: list | dict  # Could be a list of dicts for SELECT, or a dict for DML/DDL
+    results: list | dict  
     
-
+class SimilarRequest(BaseModel):
+    query: str
+    
+    
 @app.post("/query", response_model=QueryResponse)
 def query_database(request: QueryRequest):
     """
@@ -92,24 +110,21 @@ def db_direct(query:str):
     """
     API endpoint to execute a raw SQL query directly on the database.
     """
-    print(query)
-    query,params = parameterize_query(query)
-    if(is_safe_query(query)):
-        try:
+    try:
+        query,params = parameterize_query(query)
+        if(is_safe_query(query)):
             db_result = execute_query(query=query, params=params)
             return {"success": True, 'results': query,  "results": db_result}
-        except Exception as e:
+        else:
             return JSONResponse(
                 status_code=500,
-                content={"success": False, "results": None, "error": str(e)})
-    else:
+                content={"success": False, "data": None, "error": "Query is not safe"})
+        
+    except Exception as e:
         return JSONResponse(
             status_code=500,
-            content={"success": False, "results": None, "error": "The following action is restricted and cannot be performed, inform the user accordingly"})
+            content={"success": False, "results": None, "error": str(e)})
 
-
-class SimilarRequest(BaseModel):
-    query: str
 
 @app.post("/similar-metadata")
 def semantic_metadata_search(req: SimilarRequest):
@@ -118,6 +133,7 @@ def semantic_metadata_search(req: SimilarRequest):
             status_code=400,
             content={"success": False, "message": "failed", "error": "Missing Query"}
         )
+        
     
     try:
         user_embedding = embed_texts([req.query], task_type="RETRIEVAL_QUERY")[0]
@@ -171,11 +187,30 @@ def preload_embeddings():
 
 
 @app.post("/embed-metadata")
-def embed_metadata(owner: str = Query(os.getenv('DB_USER'), description="owner/name for pipeline")):
+@app.post("/embed-metadata")
+def embed_metadata(owner: str = Query('CHATBOT_USER', description="owner/name for pipeline")):
     """
     Trigger the full metadata -> embeddings -> upsert pipeline on demand.
     """
     try:
+        # Force refresh the cache to get fresh metadata
+        metadata = extract_db_metadata(owner=owner, force_refresh=True)
+        
+        if not metadata:
+            return JSONResponse(
+                status_code=400,
+                content={
+                    "success": False, 
+                    "message": "No metadata extracted from database",
+                    "details": f"Owner '{owner}' has tables but metadata extraction failed. Check server logs."
+                }
+            )
+        
+        print(f"📊 Starting embedding pipeline for {len(metadata)} tables")
+        # Log the tables we found
+        for table_name in metadata.keys():
+            print(f"   - {table_name}")
+            
         # Force refresh the cache to get fresh metadata
         metadata = extract_db_metadata(owner=owner, force_refresh=True)
         

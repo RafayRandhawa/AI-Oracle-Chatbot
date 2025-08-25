@@ -15,11 +15,11 @@ logging.basicConfig(filename="db_errors.log", level=logging.ERROR)
 load_dotenv()
 oracledb.init_oracle_client(lib_dir=os.getenv("INSTANT_CLIENT"))
 
-# Database configuration:
+# Database configuration: replace these with your actual credentials.
 
-# DB_USER = 'CHATBOT_USER'
-# DB_PASSWORD = 'chatbotpass'
-# DB_DSN = 'localhost/XE'  
+DB_USER = 'chatbot_user'
+DB_PASSWORD = 'chatbotpass'
+DB_DSN = 'localhost/XE'  
 
 # DSN format is 'hostname/SERVICE_NAME' for Oracle XE.
 
@@ -27,9 +27,9 @@ oracledb.init_oracle_client(lib_dir=os.getenv("INSTANT_CLIENT"))
 #Test Server Credentials
 
 
-DB_USER = os.getenv('DB_USER')
-DB_PASSWORD = os.getenv('DB_PASSWORD')
-DB_DSN = os.getenv('DB_DSN')
+#DB_USER = os.getenv('DB_USER')
+#DB_PASSWORD = os.getenv('DB_PASSWORD')
+#DB_DSN = os.getenv('DB_DSN')
 
 
 
@@ -135,7 +135,8 @@ def execute_query(query: str, params: dict = None):
             try: conn.close()
             except: pass
 
-def extract_db_metadata(owner: str = 'tis', force_refresh=False):
+
+def extract_db_metadata(owner: str = 'TIS', force_refresh=False):
     """
     Extracts comprehensive database metadata for a given owner/schema, with optional caching.
     """
