@@ -160,3 +160,61 @@ Traceback (most recent call last):
 oracledb.exceptions.DatabaseError: ORA-01036: unrecognized bind variable param1 passed to the bind call
 Help: https://docs.oracle.com/error-help/db/ora-01036/
 
+ERROR:root:Database error:
+Traceback (most recent call last):
+  File "C:\Users\deski02\AI-Oracle-Chatbot\backend\db_handler.py", line 90, in execute_query
+    cursor.execute(query, params)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\deski02\AI-Oracle-Chatbot\backend\venv\Lib\site-packages\oracledb\cursor.py", line 708, in execute
+    impl.execute(self)
+    ~~~~~~~~~~~~^^^^^^
+  File "src/oracledb/impl/thick/cursor.pyx", line 306, in oracledb.thick_impl.ThickCursorImpl.execute
+  File "src/oracledb/impl/base/cursor.pyx", line 351, in oracledb.base_impl.BaseCursorImpl._perform_binds
+  File "src/oracledb/impl/thick/var.pyx", line 67, in oracledb.thick_impl.ThickVarImpl._bind
+  File "src/oracledb/impl/thick/utils.pyx", line 484, in oracledb.thick_impl._raise_from_odpi
+  File "src/oracledb/impl/thick/utils.pyx", line 474, in oracledb.thick_impl._raise_from_info
+oracledb.exceptions.DatabaseError: ORA-01036: unrecognized bind variable param3 passed to the bind call
+Help: https://docs.oracle.com/error-help/db/ora-01036/
+
+ERROR:root:Database error:
+Traceback (most recent call last):
+  File "C:\Users\deski02\AI-Oracle-Chatbot\backend\db_handler.py", line 90, in execute_query
+    cursor.execute(query, params)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\deski02\AI-Oracle-Chatbot\backend\venv\Lib\site-packages\oracledb\cursor.py", line 708, in execute
+    impl.execute(self)
+    ~~~~~~~~~~~~^^^^^^
+  File "src/oracledb/impl/thick/cursor.pyx", line 318, in oracledb.thick_impl.ThickCursorImpl.execute
+  File "src/oracledb/impl/thick/utils.pyx", line 484, in oracledb.thick_impl._raise_from_odpi
+  File "src/oracledb/impl/thick/utils.pyx", line 474, in oracledb.thick_impl._raise_from_info
+oracledb.exceptions.DatabaseError: ORA-00904: "HRTRATE"."UPPER": invalid identifier
+Help: https://docs.oracle.com/error-help/db/ora-00904/
+
+ERROR:root:Database error:
+Traceback (most recent call last):
+  File "C:\Users\deski02\AI-Oracle-Chatbot\backend\db_handler.py", line 90, in execute_query
+    cursor.execute(query, params)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\deski02\AI-Oracle-Chatbot\backend\venv\Lib\site-packages\oracledb\cursor.py", line 708, in execute
+    impl.execute(self)
+    ~~~~~~~~~~~~^^^^^^
+  File "src/oracledb/impl/thick/cursor.pyx", line 318, in oracledb.thick_impl.ThickCursorImpl.execute
+  File "src/oracledb/impl/thick/utils.pyx", line 484, in oracledb.thick_impl._raise_from_odpi
+  File "src/oracledb/impl/thick/utils.pyx", line 474, in oracledb.thick_impl._raise_from_info
+oracledb.exceptions.DatabaseError: ORA-00904: "EMPNO": invalid identifier
+Help: https://docs.oracle.com/error-help/db/ora-00904/
+
+ERROR:root:Database error:
+Traceback (most recent call last):
+  File "C:\Users\deski02\AI-Oracle-Chatbot\backend\db_handler.py", line 90, in execute_query
+    cursor.execute(query, params)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\deski02\AI-Oracle-Chatbot\backend\venv\Lib\site-packages\oracledb\cursor.py", line 708, in execute
+    impl.execute(self)
+    ~~~~~~~~~~~~^^^^^^
+  File "src/oracledb/impl/thick/cursor.pyx", line 318, in oracledb.thick_impl.ThickCursorImpl.execute
+  File "src/oracledb/impl/thick/utils.pyx", line 484, in oracledb.thick_impl._raise_from_odpi
+  File "src/oracledb/impl/thick/utils.pyx", line 474, in oracledb.thick_impl._raise_from_info
+oracledb.exceptions.DatabaseError: ORA-00904: "F"."UPPER": invalid identifier
+Help: https://docs.oracle.com/error-help/db/ora-00904/
+
