@@ -3,6 +3,8 @@ from fastapi import APIRouter, HTTPException, Depends, Request
 from pydantic import BaseModel
 from auth.auth_service import login_service
 from fastapi.responses import JSONResponse
+import os
+
 # Create an APIRouter for authentication-related endpoints
 auth_router = APIRouter()
 
@@ -27,7 +29,11 @@ def login(request: LoginRequest):
         key="auth_token",
         value=token,
         httponly=True,        # JS can't read it
-        samesite="None",      # "None" if you want cross-site cookies
-        secure=False          # True if HTTPS
+        samesite="None" if os.getenv("ENV") == "production" else "Lax", # Adjust based on environment
+        secure=os.getenv("ENV") == "production",  # True if HTTPS in production
+        max_age=60 * 60,  # Set cookie to expire in 7 days
+        expires=60 * 60   # Explicitly set expiration to 7 days
     )
+    print(f"Response: {response.body}")  # Log the response body
+    print(f"Cookies: {response.headers.get('set-cookie')}")  # Log the set-cookie header
     return response

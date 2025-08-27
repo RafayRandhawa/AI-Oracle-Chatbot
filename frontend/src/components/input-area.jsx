@@ -13,7 +13,7 @@ export default function InputArea({ input, setInput, isStreaming, sendMessage })
 
   const buttonClasses = theme === 'dark'
     ? 'ml-2 px-4 py-2 rounded-lg text-white bg-[#D32F2F] hover:bg-[#c62828] disabled:opacity-50'
-    : 'ml-2 px-4 py-2 rounded-lg text-white bg-red-600 hover:bg-red-700 disabled:opacity-50';
+    : 'ml-2 px-4 py-2 rounded-lg text-gray-300 bg-gray-500 hover:bg-gray-600 disabled:opacity-50';
 
   return(
     <div className={wrapperClasses}>

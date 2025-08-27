@@ -68,6 +68,7 @@ def execute_query(query: str, params: dict = None):
 
         query = query.strip().rstrip(';')
         logging.info("Executing query:\n%s\nParams: %s", query, params)
+        print(f"Executing query:\n{query}\nParams: {params}")
 
         if params:
             cursor.execute(query, params)
@@ -347,3 +348,5 @@ def is_safe_query(sql: str) -> bool:
         if re.search(rf"\b{kw}\b", sql_upper):
             return False
     return True
+
+

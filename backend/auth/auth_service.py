@@ -1,3 +1,4 @@
+import json
 from db_handler import get_connection
 from datetime import datetime, timedelta
 from jose import jwt
@@ -29,11 +30,11 @@ def create_token(data: dict, expires_delta: timedelta):
 def create_tokens(user_id: int):
     access_token = create_token(
         {"sub": str(user_id)},
-        timedelta(minutes=int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES")))
+        timedelta(days=7)  # Increased token expiration to 7 days
     )
     refresh_token = create_token(
         {"sub": str(user_id), "type": "refresh"},
-        timedelta(days=int(os.getenv("REFRESH_TOKEN_EXPIRE_DAYS")))
+        timedelta(days=30)  # Increased refresh token expiration to 30 days
     )
     return access_token, refresh_token
 
@@ -62,20 +63,27 @@ def login_service(username: str, password: str):
 def get_current_user_from_cookie(request: Request):
     token = request.cookies.get("auth_token")
     
+    if token:
+        temp = token.replace("'", "\"")
+        token = json.loads(temp).get("access_token")
     if not token:
         auth_header = request.headers.get("Authorization")
         if auth_header and auth_header.startswith("Bearer "):
             token = auth_header.split(" ", 1)[1]
-            
+    
     if not token:
         raise HTTPException(status_code=401, detail="Not authenticated")
     
     try:
         payload = jwt.decode(token,os.getenv("JWT_SECRET"), algorithms=[os.getenv("JWT_ALGORITHM")])
+        
         user_id = payload.get("sub")
         if user_id is None:
             raise HTTPException(status_code=401, detail="Invalid Token")
-        print(f"User ID from token: {user_id}")
+        
         return {"id": user_id}
     except jwt.JWTError:    
+        print("JWT Error occurred during token decoding.")
         raise HTTPException(status_code=401, detail="Invalid Token")
+    
+    
