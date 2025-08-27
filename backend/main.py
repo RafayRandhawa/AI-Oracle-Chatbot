@@ -1,5 +1,6 @@
 from nt import error
 from auth.auth_routes import auth_router
+from sessions.session_router import session_router
 from requests import status_codes
 from fastapi import FastAPI, HTTPException, Query, Depends
 from fastapi.middleware.cors import CORSMiddleware
@@ -22,6 +23,7 @@ app = FastAPI(
     version="1.0.0"
 )
 app.include_router(auth_router, prefix="/auth", tags=["Authentication"])
+app.include_router(session_router, prefix="/sessions", tags=["Sessions"])
 
 origins = [
     "http://localhost:5173",   # Front
@@ -46,7 +48,8 @@ class QueryResponse(BaseModel):
     
 class SimilarRequest(BaseModel):
     query: str
-    
+
+
     
 @app.post("/query", response_model=QueryResponse)
 def query_database(request: QueryRequest):
@@ -157,3 +160,5 @@ def embed_metadata(owner: str = Query(os.getenv('DB_USER'), description="owner/n
             status_code=500,
             content={"success": False, "message": "failed", "error": "Vector Embeddings cannot be completed at the moment"})
 
+
+        

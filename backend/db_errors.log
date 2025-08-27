@@ -144,3 +144,17 @@ WARNING:urllib3.connectionpool:Retrying (JitterRetry(total=3, connect=None, read
 WARNING:urllib3.connectionpool:Retrying (JitterRetry(total=2, connect=None, read=None, redirect=None, status=None)) after connection broken by 'ConnectionAbortedError(10053, 'An established connection was aborted by the software in your host machine', None, 10053, None)': /vectors/upsert
 WARNING:urllib3.connectionpool:Retrying (JitterRetry(total=1, connect=None, read=None, redirect=None, status=None)) after connection broken by 'ConnectionAbortedError(10053, 'An established connection was aborted by the software in your host machine', None, 10053, None)': /vectors/upsert
 WARNING:urllib3.connectionpool:Retrying (JitterRetry(total=0, connect=None, read=None, redirect=None, status=None)) after connection broken by 'ConnectionAbortedError(10053, 'An established connection was aborted by the software in your host machine', None, 10053, None)': /vectors/upsert
+ERROR:root:Database error:
+Traceback (most recent call last):
+  File "D:\Web Development\Oracle AI Chatbot\AI-Oracle-Chatbot\backend\db_handler.py", line 73, in execute_query
+    cursor.execute(query, params)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "D:\Web Development\Oracle AI Chatbot\AI-Oracle-Chatbot\backend\venv\Lib\site-packages\oracledb\cursor.py", line 708, in execute
+    impl.execute(self)
+    ~~~~~~~~~~~~^^^^^^
+  File "src/oracledb/impl/thick/cursor.pyx", line 318, in oracledb.thick_impl.ThickCursorImpl.execute
+  File "src/oracledb/impl/thick/utils.pyx", line 484, in oracledb.thick_impl._raise_from_odpi
+  File "src/oracledb/impl/thick/utils.pyx", line 474, in oracledb.thick_impl._raise_from_info
+oracledb.exceptions.DatabaseError: ORA-01789: query block has incorrect number of result columns
+Help: https://docs.oracle.com/error-help/db/ora-01789/
+

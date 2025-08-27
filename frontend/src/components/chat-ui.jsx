@@ -8,13 +8,8 @@ import { useTheme } from "./theme-context";
 import { sendToN8n } from "../services/chatApi";
 import remarkGfm from "remark-gfm"; // Enable GitHub-flavored markdown (tables, etc.)
 import { useAuth } from "../auth/authContext"; // For authentication context
-export default function ChatUI() {
-  // Messages shown in the chat. We persist them in localStorage to keep
-  // history across refreshes.
-  const [messages, setMessages] = useState(() => {
-    return JSON.parse(localStorage.getItem("chat-history")) || [];
-  });
-
+import {createSession} from "../services/sessions";
+export default function ChatUI({ messages, setMessages , currentSessionId, setCurrentSessionId }) {
   // Controlled input state for the message field.
   const [input, setInput] = useState("");
 
@@ -32,7 +27,7 @@ const { user, token } = useAuth(); // Get current user from auth context
   // Persist chat history and auto-scroll when messages update.
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    localStorage.setItem("chat-history", JSON.stringify(messages));
+    
   }, [messages]);
 
   // Sends the current input to the backend (n8n) and shows the result.
@@ -43,6 +38,26 @@ const { user, token } = useAuth(); // Get current user from auth context
     }
 
     // 1) Add the user message to the chat immediately for responsiveness.
+
+    useEffect(() => {
+      if(currentSessionId)
+        return;
+      else{
+        const createNewSession = async () => {
+          try {
+            const session = await createSession(input[0].content);
+            setCurrentSessionId(session.id);
+            console.log("Created new session:", session);
+          } catch (err) {
+            console.error("Failed to create session:", err);
+            toast.error("Failed to create a new chat session.");
+          }
+        };
+        createNewSession();
+      }
+
+    }, [messages, currentSessionId] )
+
     const userMessage = { role: "user", content: input };
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
@@ -94,7 +109,7 @@ const { user, token } = useAuth(); // Get current user from auth context
             msg.role === "user"
               ? (theme === 'dark'
                   ? "bg-[#D32F2F] text-white"
-                  : "bg-red-600 text-white")
+                  : "bg-gray-500 text-gray-300")
               : (theme === 'dark'
                   ? "bg-[#1E1E1E] text-gray-100"
                   : "bg-gray-100 text-gray-900");
