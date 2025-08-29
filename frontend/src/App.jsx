@@ -21,7 +21,7 @@ export default function App() {
   const [error, setError] = useState(null); // Track errors
   const [messages, setMessages] = useState([]);
   const sidebarRef = useRef(null);
-  const [curreSessionId, setCurrentSessionId] = useState(null);
+  const [currentSessionId, setCurrentSessionId] = useState(null);
   
   useEffect(() => {
     const hash = window.location.hash; // e.g., "#session-123"
@@ -44,8 +44,14 @@ export default function App() {
       }
     }
 
-    fetchMessages(curreSessionId)
-  }, curreSessionId)
+    // Only fetch messages if we have a valid session ID
+    if (currentSessionId) {
+      fetchMessages(currentSessionId);
+    } else {
+      // Clear messages when no session is selected
+      setMessages([]);
+    }
+  }, [currentSessionId])
 
   useEffect(() => {
     async function fetchSessions() {
@@ -72,7 +78,7 @@ export default function App() {
                 <Sidebar ref={sidebarRef} open={open} setOpen={setOpen} animate={false} className="w-1/4">
                   <SidebarBody className="justify-between gap-10">
                     <div className="flex flex-1 flex-col overflow-x-hidden overflow-y-auto">
-                      {/* ✅ New Chat button at the top */}
+                      {/* New Chat button at the top */}
                       <div className="mt-4 mb-2">
                         <SidebarLink
                           link={{
@@ -84,6 +90,7 @@ export default function App() {
                           }}
                           onClick={() => {
                             // Clear messages & start new session
+                          
                             setMessages([]);
                             setCurrentSessionId(null);
                             console.log("🆕 New chat started!");
@@ -153,7 +160,7 @@ export default function App() {
                   <ChatUI
                     messages={messages}
                     setMessages={setMessages}
-                    currentSessionId={curreSessionId}
+                    currentSessionId={currentSessionId}
                     setCurrentSessionId={setCurrentSessionId}
                   />
                 </div>

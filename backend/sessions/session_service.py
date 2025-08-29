@@ -4,12 +4,14 @@ import logging
 import traceback
 
 def create_session(user_id: int,title: str):
+    print(f"create_session called with user_id: {user_id}, title: {title}")
     conn = get_connection()
     cursor = conn.cursor()
     try:
         cursor.execute("INSERT INTO CHAT_SESSIONS (user_id,title) VALUES (:1,:2) RETURNING id INTO :3", (user_id,title,cursor.var(int)))
         session_id = cursor.getvalue(2)
         conn.commit()
+        print(f"Session ID fetched: {session_id}")
         return session_id
     except oracledb.DatabaseError as db_err:
         error_obj, = db_err.args
