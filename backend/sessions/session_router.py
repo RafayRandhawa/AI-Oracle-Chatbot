@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
-from sessions.session_service import get_sessions,create_session,rename_session,delete_session,get_messages
+from sessions.session_service import get_sessions,create_session,rename_session,delete_session,get_messages,save_message
 from fastapi.responses import JSONResponse
 from auth.auth_service import get_current_user_from_cookie
 import traceback
@@ -41,6 +41,7 @@ def get_sessions_endpoint(current_user: dict = Depends(get_current_user_from_coo
     try:
         user_id = int(current_user["id"])  # Convert string to int
         sessions = get_sessions(user_id=user_id)
+        print({"success": True, "sessions": sessions})
         return {"success": True, "sessions": sessions}
     except Exception as e:
         print(f"Error details: {str(e)}")
@@ -90,3 +91,47 @@ def get_messages_endpoint(session_id: int):
         return JSONResponse(
             status_code=500,
             content={"success": False, "message": "failed", "error": str(e)})
+
+
+from pydantic import BaseModel
+from fastapi import Depends
+from fastapi.responses import JSONResponse
+import traceback
+
+
+class MessageRequest(BaseModel):
+    session_id: int
+    role: str  # e.g. "user" or "assistant"
+    content: str
+
+
+@session_router.post("/set-messages")
+def store_message_endpoint(
+    req: MessageRequest, current_user: dict = Depends(get_current_user_from_cookie)
+):
+    """
+    Store a new message for a given session.
+    """
+    try:
+        user_id = int(current_user["id"])
+        print(f"Storing message for user {user_id}, session {req.session_id}")
+
+        # Call service layer
+        message_id = save_message(
+            session_id=req.session_id,
+            role=req.role,
+            content=req.content,
+        )
+        return {"success": True, "message_id": message_id}
+
+    except Exception as e:
+        print(f"Error storing message: {str(e)}")
+        print(traceback.format_exc())
+        return JSONResponse(
+            status_code=500,
+            content={
+                "success": False,
+                "message": "failed",
+                "error": str(e),
+            },
+        )

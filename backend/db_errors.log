@@ -158,3 +158,200 @@ Traceback (most recent call last):
 oracledb.exceptions.DatabaseError: ORA-01789: query block has incorrect number of result columns
 Help: https://docs.oracle.com/error-help/db/ora-01789/
 
+ERROR:root:Database error:
+Traceback (most recent call last):
+  File "E:\AI-Oracle-Chatbot\backend\db_handler.py", line 76, in execute_query
+    cursor.execute(query)
+    ~~~~~~~~~~~~~~^^^^^^^
+  File "E:\AI-Oracle-Chatbot\backend\venv\Lib\site-packages\oracledb\cursor.py", line 708, in execute
+    impl.execute(self)
+    ~~~~~~~~~~~~^^^^^^
+  File "src/oracledb/impl/thick/cursor.pyx", line 318, in oracledb.thick_impl.ThickCursorImpl.execute
+  File "src/oracledb/impl/thick/utils.pyx", line 484, in oracledb.thick_impl._raise_from_odpi
+  File "src/oracledb/impl/thick/utils.pyx", line 474, in oracledb.thick_impl._raise_from_info
+oracledb.exceptions.DatabaseError: ORA-00942: table or view does not exist
+Help: https://docs.oracle.com/error-help/db/ora-00942/
+
+ERROR:root:Database error:
+Traceback (most recent call last):
+  File "E:\AI-Oracle-Chatbot\backend\db_handler.py", line 76, in execute_query
+    cursor.execute(query)
+    ~~~~~~~~~~~~~~^^^^^^^
+  File "E:\AI-Oracle-Chatbot\backend\venv\Lib\site-packages\oracledb\cursor.py", line 708, in execute
+    impl.execute(self)
+    ~~~~~~~~~~~~^^^^^^
+  File "src/oracledb/impl/thick/cursor.pyx", line 318, in oracledb.thick_impl.ThickCursorImpl.execute
+  File "src/oracledb/impl/thick/utils.pyx", line 484, in oracledb.thick_impl._raise_from_odpi
+  File "src/oracledb/impl/thick/utils.pyx", line 474, in oracledb.thick_impl._raise_from_info
+oracledb.exceptions.DatabaseError: ORA-00942: table or view does not exist
+Help: https://docs.oracle.com/error-help/db/ora-00942/
+
+ERROR:root:Database error in create_session:
+Traceback (most recent call last):
+  File "E:\AI-Oracle-Chatbot\backend\sessions\session_service.py", line 11, in create_session
+    cursor.execute("INSERT INTO CHAT_SESSIONS (user_id,title) VALUES (:1,:2) RETURNING id INTO :3", (user_id,title,cursor.var(int)))
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\AI-Oracle-Chatbot\backend\venv\Lib\site-packages\oracledb\cursor.py", line 708, in execute
+    impl.execute(self)
+    ~~~~~~~~~~~~^^^^^^
+  File "src/oracledb/impl/thick/cursor.pyx", line 318, in oracledb.thick_impl.ThickCursorImpl.execute
+  File "src/oracledb/impl/thick/utils.pyx", line 484, in oracledb.thick_impl._raise_from_odpi
+  File "src/oracledb/impl/thick/utils.pyx", line 474, in oracledb.thick_impl._raise_from_info
+oracledb.exceptions.DatabaseError: ORA-04098: trigger 'CHATBOT_USER.TRG_CHAT_SESSIONS_BI' is invalid and failed re-validation
+Help: https://docs.oracle.com/error-help/db/ora-04098/
+
+ERROR:root:Database error in create_session:
+Traceback (most recent call last):
+  File "E:\AI-Oracle-Chatbot\backend\sessions\session_service.py", line 11, in create_session
+    cursor.execute("INSERT INTO CHAT_SESSIONS (user_id,title) VALUES (:1,:2) RETURNING id INTO :3", (user_id,title,cursor.var(int)))
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\AI-Oracle-Chatbot\backend\venv\Lib\site-packages\oracledb\cursor.py", line 708, in execute
+    impl.execute(self)
+    ~~~~~~~~~~~~^^^^^^
+  File "src/oracledb/impl/thick/cursor.pyx", line 318, in oracledb.thick_impl.ThickCursorImpl.execute
+  File "src/oracledb/impl/thick/utils.pyx", line 484, in oracledb.thick_impl._raise_from_odpi
+  File "src/oracledb/impl/thick/utils.pyx", line 474, in oracledb.thick_impl._raise_from_info
+oracledb.exceptions.DatabaseError: ORA-04098: trigger 'CHATBOT_USER.TRG_CHAT_SESSIONS_BI' is invalid and failed re-validation
+Help: https://docs.oracle.com/error-help/db/ora-04098/
+
+ERROR:root:Database error in create_session:
+Traceback (most recent call last):
+  File "E:\AI-Oracle-Chatbot\backend\sessions\session_service.py", line 11, in create_session
+    cursor.execute("INSERT INTO CHAT_SESSIONS (user_id,title) VALUES (:1,:2) RETURNING id INTO :3", (user_id,title,cursor.var(int)))
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\AI-Oracle-Chatbot\backend\venv\Lib\site-packages\oracledb\cursor.py", line 708, in execute
+    impl.execute(self)
+    ~~~~~~~~~~~~^^^^^^
+  File "src/oracledb/impl/thick/cursor.pyx", line 318, in oracledb.thick_impl.ThickCursorImpl.execute
+  File "src/oracledb/impl/thick/utils.pyx", line 484, in oracledb.thick_impl._raise_from_odpi
+  File "src/oracledb/impl/thick/utils.pyx", line 474, in oracledb.thick_impl._raise_from_info
+oracledb.exceptions.DatabaseError: ORA-04098: trigger 'CHATBOT_USER.TRG_CHAT_SESSIONS_BI' is invalid and failed re-validation
+Help: https://docs.oracle.com/error-help/db/ora-04098/
+
+ERROR:root:Database error in create_session:
+Traceback (most recent call last):
+  File "E:\AI-Oracle-Chatbot\backend\sessions\session_service.py", line 11, in create_session
+    cursor.execute("INSERT INTO CHAT_SESSIONS (user_id,title) VALUES (:1,:2) RETURNING id INTO :3", (user_id,title,cursor.var(int)))
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\AI-Oracle-Chatbot\backend\venv\Lib\site-packages\oracledb\cursor.py", line 708, in execute
+    impl.execute(self)
+    ~~~~~~~~~~~~^^^^^^
+  File "src/oracledb/impl/thick/cursor.pyx", line 318, in oracledb.thick_impl.ThickCursorImpl.execute
+  File "src/oracledb/impl/thick/utils.pyx", line 484, in oracledb.thick_impl._raise_from_odpi
+  File "src/oracledb/impl/thick/utils.pyx", line 474, in oracledb.thick_impl._raise_from_info
+oracledb.exceptions.DatabaseError: ORA-04098: trigger 'CHATBOT_USER.TRG_CHAT_SESSIONS_BI' is invalid and failed re-validation
+Help: https://docs.oracle.com/error-help/db/ora-04098/
+
+ERROR:root:Database error in get_messages:
+Traceback (most recent call last):
+  File "E:\AI-Oracle-Chatbot\backend\sessions\session_service.py", line 107, in get_messages
+    cursor.execute("Select id, role, content, created_at FROM MESSAGES WHERE session_id = :1 ORDER BY created_at ASC", (session_id,))
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\AI-Oracle-Chatbot\backend\venv\Lib\site-packages\oracledb\cursor.py", line 708, in execute
+    impl.execute(self)
+    ~~~~~~~~~~~~^^^^^^
+  File "src/oracledb/impl/thick/cursor.pyx", line 318, in oracledb.thick_impl.ThickCursorImpl.execute
+  File "src/oracledb/impl/thick/utils.pyx", line 484, in oracledb.thick_impl._raise_from_odpi
+  File "src/oracledb/impl/thick/utils.pyx", line 474, in oracledb.thick_impl._raise_from_info
+oracledb.exceptions.DatabaseError: ORA-00942: table or view does not exist
+Help: https://docs.oracle.com/error-help/db/ora-00942/
+
+ERROR:root:Database error in get_messages:
+Traceback (most recent call last):
+  File "E:\AI-Oracle-Chatbot\backend\sessions\session_service.py", line 107, in get_messages
+    cursor.execute("Select id, role, content, created_at FROM MESSAGES WHERE session_id = :1 ORDER BY created_at ASC", (session_id,))
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\AI-Oracle-Chatbot\backend\venv\Lib\site-packages\oracledb\cursor.py", line 708, in execute
+    impl.execute(self)
+    ~~~~~~~~~~~~^^^^^^
+  File "src/oracledb/impl/thick/cursor.pyx", line 318, in oracledb.thick_impl.ThickCursorImpl.execute
+  File "src/oracledb/impl/thick/utils.pyx", line 484, in oracledb.thick_impl._raise_from_odpi
+  File "src/oracledb/impl/thick/utils.pyx", line 474, in oracledb.thick_impl._raise_from_info
+oracledb.exceptions.DatabaseError: ORA-00942: table or view does not exist
+Help: https://docs.oracle.com/error-help/db/ora-00942/
+
+ERROR:root:Database error in get_messages:
+Traceback (most recent call last):
+  File "E:\AI-Oracle-Chatbot\backend\sessions\session_service.py", line 107, in get_messages
+    cursor.execute("Select id, role, content, created_at FROM MESSAGES WHERE session_id = :1 ORDER BY created_at ASC", (session_id,))
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\AI-Oracle-Chatbot\backend\venv\Lib\site-packages\oracledb\cursor.py", line 708, in execute
+    impl.execute(self)
+    ~~~~~~~~~~~~^^^^^^
+  File "src/oracledb/impl/thick/cursor.pyx", line 318, in oracledb.thick_impl.ThickCursorImpl.execute
+  File "src/oracledb/impl/thick/utils.pyx", line 484, in oracledb.thick_impl._raise_from_odpi
+  File "src/oracledb/impl/thick/utils.pyx", line 474, in oracledb.thick_impl._raise_from_info
+oracledb.exceptions.DatabaseError: ORA-00942: table or view does not exist
+Help: https://docs.oracle.com/error-help/db/ora-00942/
+
+ERROR:root:Database error in get_messages:
+Traceback (most recent call last):
+  File "E:\AI-Oracle-Chatbot\backend\sessions\session_service.py", line 107, in get_messages
+    cursor.execute("Select id, role, content, created_at FROM MESSAGES WHERE session_id = :1 ORDER BY created_at ASC", (session_id,))
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\AI-Oracle-Chatbot\backend\venv\Lib\site-packages\oracledb\cursor.py", line 708, in execute
+    impl.execute(self)
+    ~~~~~~~~~~~~^^^^^^
+  File "src/oracledb/impl/thick/cursor.pyx", line 318, in oracledb.thick_impl.ThickCursorImpl.execute
+  File "src/oracledb/impl/thick/utils.pyx", line 484, in oracledb.thick_impl._raise_from_odpi
+  File "src/oracledb/impl/thick/utils.pyx", line 474, in oracledb.thick_impl._raise_from_info
+oracledb.exceptions.DatabaseError: ORA-00942: table or view does not exist
+Help: https://docs.oracle.com/error-help/db/ora-00942/
+
+ERROR:root:Database error in get_messages:
+Traceback (most recent call last):
+  File "E:\AI-Oracle-Chatbot\backend\sessions\session_service.py", line 107, in get_messages
+    cursor.execute("Select id, role, content, created_at FROM MESSAGES WHERE session_id = :1 ORDER BY created_at ASC", (session_id,))
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\AI-Oracle-Chatbot\backend\venv\Lib\site-packages\oracledb\cursor.py", line 708, in execute
+    impl.execute(self)
+    ~~~~~~~~~~~~^^^^^^
+  File "src/oracledb/impl/thick/cursor.pyx", line 318, in oracledb.thick_impl.ThickCursorImpl.execute
+  File "src/oracledb/impl/thick/utils.pyx", line 484, in oracledb.thick_impl._raise_from_odpi
+  File "src/oracledb/impl/thick/utils.pyx", line 474, in oracledb.thick_impl._raise_from_info
+oracledb.exceptions.DatabaseError: ORA-00942: table or view does not exist
+Help: https://docs.oracle.com/error-help/db/ora-00942/
+
+ERROR:root:Database error in get_messages:
+Traceback (most recent call last):
+  File "E:\AI-Oracle-Chatbot\backend\sessions\session_service.py", line 107, in get_messages
+    cursor.execute(
+    ~~~~~~~~~~~~~~^
+        """
+        ^^^
+    ...<5 lines>...
+        (session_id,),
+        ^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\AI-Oracle-Chatbot\backend\venv\Lib\site-packages\oracledb\cursor.py", line 708, in execute
+    impl.execute(self)
+    ~~~~~~~~~~~~^^^^^^
+  File "src/oracledb/impl/thick/cursor.pyx", line 318, in oracledb.thick_impl.ThickCursorImpl.execute
+  File "src/oracledb/impl/thick/utils.pyx", line 484, in oracledb.thick_impl._raise_from_odpi
+  File "src/oracledb/impl/thick/utils.pyx", line 474, in oracledb.thick_impl._raise_from_info
+oracledb.exceptions.DatabaseError: ORA-00942: table or view does not exist
+Help: https://docs.oracle.com/error-help/db/ora-00942/
+
+ERROR:root:Database error in get_messages:
+Traceback (most recent call last):
+  File "E:\AI-Oracle-Chatbot\backend\sessions\session_service.py", line 107, in get_messages
+    cursor.execute(
+    ~~~~~~~~~~~~~~^
+        """
+        ^^^
+    ...<5 lines>...
+        (session_id,),
+        ^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\AI-Oracle-Chatbot\backend\venv\Lib\site-packages\oracledb\cursor.py", line 708, in execute
+    impl.execute(self)
+    ~~~~~~~~~~~~^^^^^^
+  File "src/oracledb/impl/thick/cursor.pyx", line 318, in oracledb.thick_impl.ThickCursorImpl.execute
+  File "src/oracledb/impl/thick/utils.pyx", line 484, in oracledb.thick_impl._raise_from_odpi
+  File "src/oracledb/impl/thick/utils.pyx", line 474, in oracledb.thick_impl._raise_from_info
+oracledb.exceptions.DatabaseError: ORA-00942: table or view does not exist
+Help: https://docs.oracle.com/error-help/db/ora-00942/
+
+WARNING:urllib3.connectionpool:Retrying (JitterRetry(total=4, connect=None, read=None, redirect=None, status=None)) after connection broken by 'RemoteDisconnected('Remote end closed connection without response')': /query
