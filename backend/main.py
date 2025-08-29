@@ -28,7 +28,9 @@ app.include_router(session_router, prefix="/sessions", tags=["Sessions"])
 origins = [
     "http://localhost:5173",   # Front
     "http://localhost:5678",
-    "http://10.0.1.31:5173",   # N8N
+    "http://10.0.1.31:5173"
+    "http://10.0.1.31:4173",   
+    "http://10.0.1.31:5678"# N8N
 ]
 
 app.add_middleware(
