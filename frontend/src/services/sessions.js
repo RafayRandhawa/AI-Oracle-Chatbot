@@ -3,13 +3,17 @@ import axios from "axios";
 // Create a new session
 export async function createSession(title) {
   try {
+    console.log("Making createSession request with title:", title);
     const res = await axios.post(
       "http://localhost:8000/sessions/create-session",
       { title },
       { withCredentials: true }
     );
+    console.log("createSession response:", res.data);
     return res.data;
   } catch (error) {
+    console.error("createSession error:", error);
+    console.error("Error response:", error.response);
     const detail = error?.response?.data?.detail || error?.message || "Failed to create session";
     throw new Error(detail);
   }

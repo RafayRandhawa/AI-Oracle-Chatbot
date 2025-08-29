@@ -30,35 +30,38 @@ const { user, token } = useAuth(); // Get current user from auth context
     
   }, [messages]);
 
+  // Handle session creation when messages change and no session exists
+  useEffect(() => {
+    console.log("Session creation useEffect triggered:", { currentSessionId, messagesLength: messages.length });
+    if (!currentSessionId && messages.length > 0) {
+      console.log("Creating new session with first message:", messages[0].content);
+      const createNewSession = async () => {
+        try {
+          const session = await createSession(messages[0].content);
+          console.log("Session response:", session);
+          // The backend returns {success: true, session_id: number}
+          setCurrentSessionId(session.session_id);
+          console.log("Created new session with ID:", session.session_id);
+        } catch (err) {
+          console.error("Failed to create session:", err);
+          toast.error("Failed to create a new chat session.");
+        }
+      };
+      createNewSession();
+    }
+  }, [messages, currentSessionId, setCurrentSessionId]);
+
   // Sends the current input to the backend (n8n) and shows the result.
   const sendMessage = async () => {
+    console.log("sendMessage called with input:", input);
     if (!input.trim()) {
       toast.error("Please enter a message!");
       return;
     }
 
     // 1) Add the user message to the chat immediately for responsiveness.
-
-    useEffect(() => {
-      if(currentSessionId)
-        return;
-      else{
-        const createNewSession = async () => {
-          try {
-            const session = await createSession(input[0].content);
-            setCurrentSessionId(session.id);
-            console.log("Created new session:", session);
-          } catch (err) {
-            console.error("Failed to create session:", err);
-            toast.error("Failed to create a new chat session.");
-          }
-        };
-        createNewSession();
-      }
-
-    }, [messages, currentSessionId] )
-
     const userMessage = { role: "user", content: input };
+    console.log("Adding user message to chat:", userMessage);
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
 
@@ -135,21 +138,24 @@ const { user, token } = useAuth(); // Get current user from auth context
                       code({ inline, className, children, ...props }) {
                         const match = /language-(\w+)/.exec(className || "");
                         return !inline ? (
-                          <SyntaxHighlighter
-                            style={oneDark}
-                            language={match ? match[1] : "plaintext"}
-                            PreTag="div"
-                            customStyle={{
-                              background: "#1e1e1e",
-                              borderRadius: "0.5rem",
-                              padding: "0.75rem",
-                              whiteSpace: "pre-wrap",
-                              wordBreak: "break-word",
-                            }}
-                            {...props}
-                          >
-                            {String(children).replace(/\n$/, "")}
-                          </SyntaxHighlighter>
+                          <div className="my-2">
+                            <SyntaxHighlighter
+                              style={oneDark}
+                              language={match ? match[1] : "plaintext"}
+                              PreTag="pre"
+                              customStyle={{
+                                background: "#1e1e1e",
+                                borderRadius: "0.5rem",
+                                padding: "0.75rem",
+                                whiteSpace: "pre-wrap",
+                                wordBreak: "break-word",
+                                margin: "0",
+                              }}
+                              {...props}
+                            >
+                              {String(children).replace(/\n$/, "")}
+                            </SyntaxHighlighter>
+                          </div>
                         ) : (
                           <code className={`${theme === 'dark' ? 'bg-gray-800' : 'bg-gray-200'} px-1 rounded`} {...props}>
                             {children}
