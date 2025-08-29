@@ -35,40 +35,43 @@ def get_connection():
         mode=oracledb.AUTH_MODE_DEFAULT  # Explicitly using standard authentication.
     )
 
-
 def connect_with_retry(max_retries=3, delay=2):
-    for attempt in range(1, max_retries + 1):
+    """
+    Attempt to connect to the database with retries.
+    
+    Args:
+        max_retries (int): Maximum number of connection attempts
+        delay (int): Delay between retries in seconds
+        
+    Returns:
+        connection (oracledb.Connection): Active connection object.
+    """
+    for attempt in range(max_retries):
         try:
             conn = get_connection()
+            print(f"✅ Database connection successful (attempt {attempt + 1})")
             return conn
-        except oracledb.Error as e:
-            if attempt < max_retries:
-                print(f"Connection failed (attempt {attempt}), retrying...")
+        except Exception as e:
+            print(f"❌ Connection attempt {attempt + 1} failed: {e}")
+            if attempt < max_retries - 1:
+                print(f"⏳ Retrying in {delay} seconds...")
                 time.sleep(delay)
             else:
-                raise e  # re-raise the last error after final attempt
-
+                print("❌ All connection attempts failed")
+                raise
 
 def execute_query(query: str, params: dict = None):
     """
     Executes a SQL query with optional parameters and returns results or error details.
-
-    Args:
-        query (str): SQL query with placeholders (e.g., SELECT * FROM employees WHERE name = :emp_name)
-        params (dict): Optional dictionary of bind parameters.
-
-    Returns:
-        list[dict] | dict: Query results or status/error message.
     """
     conn = None
     cursor = None
     try:
-        conn = connect_with_retry()
+        conn = connect_with_retry()  # Use retry mechanism
         cursor = conn.cursor()
 
         query = query.strip().rstrip(';')
         logging.info("Executing query:\n%s\nParams: %s", query, params)
-        print(f"Executing query:\n{query}\nParams: {params}")
 
         if params:
             cursor.execute(query, params)
@@ -80,8 +83,7 @@ def execute_query(query: str, params: dict = None):
             rows = cursor.fetchall()
             result = []
             
-            for row in rows:                         #Resolved issue with LOBs here 
-                # Process each row, handling LOBs if present
+            for row in rows:
                 processed_row = {}
                 for col, value in zip(columns, row):
                     if isinstance(value, oracledb.LOB):
@@ -104,7 +106,6 @@ def execute_query(query: str, params: dict = None):
             "code": error_obj.code,
             "query": query
         }
-
     except Exception as e:
         logging.error("Unexpected error:\n%s", traceback.format_exc())
         return {
@@ -113,7 +114,6 @@ def execute_query(query: str, params: dict = None):
             "query": query,
             "trace": traceback.format_exc()
         }
-
     finally:
         if cursor:
             try: cursor.close()
@@ -126,13 +126,6 @@ def execute_query(query: str, params: dict = None):
 def extract_db_metadata(owner: str = 'chatbot_user', force_refresh=False):
     """
     Extracts comprehensive database metadata for a given owner/schema, with optional caching.
-
-    Args:
-        owner (str): The schema owner to extract metadata from (default is 'TIS').
-        force_refresh (bool): If True, refreshes the cache even if already loaded.
-
-    Returns:
-        dict: Database metadata including tables, columns, data types, PKs, FKs, comments.
     """
     global _cached_metadata
 
@@ -141,13 +134,16 @@ def extract_db_metadata(owner: str = 'chatbot_user', force_refresh=False):
         return _cached_metadata
 
     print(f"Extracting metadata from database for owner: {owner}")
-    conn = get_connection()
-    cursor = conn.cursor()
-
+    
+    conn = None
+    cursor = None
     metadata = {}
 
     try:
-        # Columns, data types, nullability, comments
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        # 1. Extract columns, data types, nullability, comments
         column_query = """
             SELECT
                 c.table_name,
@@ -167,6 +163,7 @@ def extract_db_metadata(owner: str = 'chatbot_user', force_refresh=False):
                 c.table_name, c.column_id
         """
         cursor.execute(column_query, {"owner": owner})
+        
         for table_name, column_name, data_type, nullable, col_comment in cursor.fetchall():
             table_name = table_name.upper()
             if table_name not in metadata:
@@ -183,7 +180,7 @@ def extract_db_metadata(owner: str = 'chatbot_user', force_refresh=False):
                 "comment": col_comment or ""
             })
 
-        # Primary keys
+        # 2. Extract primary keys
         pk_query = """
             SELECT
                 cols.table_name,
@@ -199,10 +196,11 @@ def extract_db_metadata(owner: str = 'chatbot_user', force_refresh=False):
         """
         cursor.execute(pk_query, {"owner": owner})
         for table_name, column_name in cursor.fetchall():
+            table_name = table_name.upper()
             if table_name in metadata:
                 metadata[table_name]["primary_keys"].append(column_name)
 
-        # Foreign keys
+        # 3. Extract foreign keys
         fk_query = """
             SELECT
                 a.table_name,
@@ -228,6 +226,7 @@ def extract_db_metadata(owner: str = 'chatbot_user', force_refresh=False):
         """
         cursor.execute(fk_query, {"owner": owner})
         for table_name, column_name, ref_table, ref_column in cursor.fetchall():
+            table_name = table_name.upper()
             if table_name in metadata:
                 metadata[table_name]["foreign_keys"].append({
                     "column": column_name,
@@ -237,7 +236,7 @@ def extract_db_metadata(owner: str = 'chatbot_user', force_refresh=False):
                     }
                 })
 
-        # Table comments
+        # 4. Extract table comments
         table_comments_query = """
             SELECT
                 table_name,
@@ -249,17 +248,35 @@ def extract_db_metadata(owner: str = 'chatbot_user', force_refresh=False):
         """
         cursor.execute(table_comments_query, {"owner": owner})
         for table_name, comment in cursor.fetchall():
+            table_name = table_name.upper()
             if table_name in metadata:
                 metadata[table_name]["table_comment"] = comment or ""
 
-        _cached_metadata = metadata  # Cache for future calls
+        _cached_metadata = metadata
+        print(f"✅ Successfully extracted metadata for {len(metadata)} tables")
         return metadata
 
+    except Exception as e:
+        print(f"❌ Error during metadata extraction: {e}")
+        import traceback
+        traceback.print_exc()
+        # Return whatever metadata we managed to extract so far
+        if metadata:
+            print(f"⚠️ Returning partial metadata for {len(metadata)} tables")
+            return metadata
+        else:
+            return {}
     finally:
-        cursor.close()
-        conn.close()
-
-
+        if cursor:
+            try:
+                cursor.close()
+            except:
+                pass
+        if conn:
+            try:
+                conn.close()
+            except:
+                pass
 
 def parameterize_query(query: str):
     param_index = 1
@@ -348,5 +365,3 @@ def is_safe_query(sql: str) -> bool:
         if re.search(rf"\b{kw}\b", sql_upper):
             return False
     return True
-
-

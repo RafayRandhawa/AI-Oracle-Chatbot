@@ -35,15 +35,24 @@ export default function App() {
   useEffect(() => {
     async function fetchMessages(sessionId) {
       try {
-        
         const data = await getMessages(sessionId);
         console.log("Fetched messages for session", sessionId, data);
-        setMessages(data);
+  
+        // Normalize data into an array
+        if (Array.isArray(data)) {
+          setMessages(data);
+        } else if (data && data.messages && Array.isArray(data.messages)) {
+          setMessages(data.messages);
+        } else {
+          console.warn("Unexpected messages format, forcing empty array:", data);
+          setMessages([]);
+        }
       } catch (err) {
         console.error("Failed to fetch messages:", err);
+        setMessages([]); // fallback to empty on error
       }
     }
-
+  
     // Only fetch messages if we have a valid session ID
     if (currentSessionId) {
       fetchMessages(currentSessionId);
@@ -51,8 +60,8 @@ export default function App() {
       // Clear messages when no session is selected
       setMessages([]);
     }
-  }, [currentSessionId])
-
+  }, [currentSessionId]);
+  
   useEffect(() => {
     async function fetchSessions() {
       try {
@@ -104,10 +113,10 @@ export default function App() {
                         ) : chatSessions.length > 0 ? (
                           chatSessions.map((session) => (
                             <SidebarLink
-                              key={session.id}
+                              key={session.session_id}
                               link={{
-                                label: session.name, // Display the name of the chat session
-                                href: `#session-${session.id}`, // Link to the specific chat session
+                                label: session.title, // Display the name of the chat session
+                                href: `#session-${session.session_id}`, // Link to the specific chat session
                                 icon: (
                                   <IconBrandTabler className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
                                 ),

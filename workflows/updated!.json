@@ -1,0 +1,1119 @@
+{
+  "name": "updated!",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## User Query Workflow\n**User types message -> get metadata -> generate custom prompt with metadata -> generate sql -> get results",
+        "height": 176,
+        "width": 320,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        4528,
+        -432
+      ],
+      "typeVersion": 1,
+      "id": "e7508b83-c4e7-476c-9699-0ad73e563e7f",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.0-flash-lite-preview",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        2680,
+        -1008
+      ],
+      "id": "ec6f7e14-ce19-4f06-af0f-bdc703abf1d7",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "oGSnDSpQ0ezJMN1E",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.5-flash-lite",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        4216,
+        -1008
+      ],
+      "id": "ab03816b-30c6-4b00-a308-88fe35f20084",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "oGSnDSpQ0ezJMN1E",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.prompt }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        2672,
+        -1232
+      ],
+      "id": "a0651658-4450-4c7e-b34d-0301bc0b11b5",
+      "name": "AI Agent2"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a helpful assistant that transforms SQL query results into clear, professional summaries for end users.  \n\nInput:  \nobjects  \n{{ Columns = ($json[\"rows\"] && $json[\"rows\"].length > 0) ? $json[\"rows\"].last().keys() : [] }}  \n{{ Values  = ($json[\"rows\"] && $json[\"rows\"].length > 0) ? $json[\"rows\"].map((item) => item.values()) : [] }}  \n\nInstructions:  \n\n⚠️ Important:  \n- If `Values` is an **empty array**, it means the SQL query executed successfully but **returned no rows**.  \n- Do **not** ask the user to provide data again. Instead, handle it gracefully as a “no results” case.  \n\n### 🚫 If No Rows Are Returned (`Values` is empty):  \n1. Respond politely and formally.  \n2. Provide a helpful message, such as:  \n   - \"No matching records were found.\"  \n   - \"Are you sure the values exist in the database?\"  \n   - \"Perhaps you meant a different filter or table?\"  \n3. Suggest possible next steps (e.g., check spelling, broaden filters, verify data availability).  \n4. Ensure the response is nicely formatted with line spacing and bullet points.  \n5. Close with a supportive sentence, e.g.:  \n   - \"Please try refining your query and run it again.\"  \n\n### ✅ If Rows Are Returned:  \nGenerate a well-structured summary with the following components:  \n\n1. 📋 Summary Explanation  \n   - Provide a concise explanation of what the returned data represents.  \n\n2. 🧠 Analytics  \n   - Analyze the data to identify patterns, trends, or notable points.  \n\n3. 📊 Formatted Results Table  \n   - Display the raw SQL results in a clean, readable Markdown table.  \n   - Ensure:  \n     * Proper column headers (converted to Title Case)  \n     * Neat alignment  \n     * No truncation or overflow  \n     * Added padding & extra spacing between columns  \n     * Spacing after data rows  \n\nFinal Note: Ensure the entire response is well-formatted, user-friendly, and suitable for presentation or reporting purposes.  \n",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        4144,
+        -1232
+      ],
+      "id": "9a085462-f53c-4829-b82b-1ab3701904fc",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "="
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        2808,
+        -1008
+      ],
+      "id": "de532b02-ed78-486c-a1fa-e0a9c8079999",
+      "name": "Simple Memory",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "return [\n  {\n    json: {\n      query: $input.first().json.body.message\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2000,
+        -1128
+      ],
+      "id": "4b5eb204-e90c-4e87-b645-f419042e7dac",
+      "name": "Convert to JSON"
+    },
+    {
+      "parameters": {
+        "jsCode": "const userQuery = $('Convert to JSON').first().json.query;\nconst metadata = $input.first().json.context;\n\nconst prompt = `\nYou are a helpful assistant. Your job is to translate natural language questions into SQL queries that can be executed on an Oracle database.\n\nUser request: ${userQuery}\n\nRelevant DB Metadata (tables, columns, FKs):\n${JSON.stringify(metadata, null, 2)}\n\nYour task is to output only a valid SQL query using Oracle syntax. \nDo not include any explanation, comments, or text outside the query.\n\nWhen generating queries:\n* Always respect foreign key relationships and join related tables when needed to retrieve meaningful or complete information.\n* If a column is a foreign key, consider joining with the referenced table to get descriptive fields (e.g., product name instead of product_id).\n* Use appropriate table aliases for readability if joining multiple tables.\n* Ensure the query reflects the intent of the user's question, even if it requires joining across multiple related tables.\n* Ensure not to include ID fields unless specifically asked for.\n\nAlways output only a raw SQL query. Do not include any markdown formatting, comments, or extra explanation — just the query.\n`;\n\nreturn [{ json: { prompt } }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2448,
+        -1128
+      ],
+      "id": "23850205-19a5-4ac4-beda-e427ef44354a",
+      "name": "Generate Custom Prompt"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\nconst updatedItems = items.map((item) => {\n  let query = item?.json?.output;\n  if (!query) return item;\n\n  // Remove triple backticks and language tag\n  query = query\n    .replace(/^```[\\w]*\\r?\\n/i, \"\")\n    .replace(/\\r?\\n```$/, \"\");\n\n  // Convert escaped \\n to real newlines\n  query = query.replace(/\\\\n/g, \"\\n\").trim();\n\n  // Remove trailing semicolons\n  query = query.replace(/;+\\s*$/, \"\").trim();\n\n  // Ensure query starts with SELECT\n  if (!/^SELECT\\s/i.test(query)) {\n    throw new Error(`Invalid query format: must start with SELECT`);\n  }\n\n  // Case-insensitive matching: transform \"col = 'value'\" into \"UPPER(col) = UPPER('value')\"\n  query = query.replace(\n    /(\\bWHERE\\b[\\s\\S]*?)(\\b\\w+\\b)\\s*=\\s*'([^']+)'/i,\n    (match, wherePart, column, value) => {\n      return `${wherePart}UPPER(${column}) = UPPER('${value}')`;\n    }\n  );\n\n  // Normalize spaces\n  item.json.output = query.replace(/\\s+/g, \" \").trim();\n\n  return item;\n});\n\nreturn updatedItems;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3024,
+        -1128
+      ],
+      "id": "1b6fcde4-4801-4fc7-a712-c42d6c52c005",
+      "name": "Clean Up SQL"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://127.0.0.1:8000/similar-metadata",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "query",
+              "value": "={{ $json.query }}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 80000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2224,
+        -1128
+      ],
+      "id": "8d421544-e097-4675-ad08-42d97b4c17a0",
+      "name": "Get Table Metadata"
+    },
+    {
+      "parameters": {
+        "url": "http://127.0.0.1:8000/db-direct?",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "query",
+              "value": "={{$json.output}}"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{ $('Webhook').item.json.body.headers.Authorization }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3248,
+        -1128
+      ],
+      "id": "b1658851-3437-44c3-a6e8-49924c13ad2f",
+      "name": "Get Output from Oracle"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\n\n\n// Flatten each row to a readable format\n// const rows = temp.map((item, index) => {\n//   const row = item;\n//   const readable = Object.entries(row)\n//     .map(([key, value]) => `**${key}**: ${value}`)\n//     .join(', ');\n//   return `Row ${index + 1}: ${readable}`;\n// });\n\nreturn [\n  {\n    json: {\n      success: items[0].json.success,\n      rows: items[0].json.results\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3472,
+        -1128
+      ],
+      "id": "64bfa850-17f4-45a4-bcf6-316088ddb4d1",
+      "name": "Get Outputs"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "7e1204dc-a1b6-4c29-acfa-c64fb2a5c01b",
+              "leftValue": "={{ $json.success }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        3696,
+        -1128
+      ],
+      "id": "549ac108-0d59-482d-816a-a211a9db0ece",
+      "name": "Success Test"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "9f40634d-dafb-4ac7-9af3-d15c45d21897",
+              "leftValue": "={{ $json.rows.error }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "notExists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        3920,
+        -1128
+      ],
+      "id": "a8653e5a-70cd-47f6-830a-5eade09a93f7",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {
+          "responseCode": 200,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "content-type",
+                "value": "text"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        4496,
+        -1128
+      ],
+      "id": "5c4bbddb-2395-46dc-ab1a-187942c93d91",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        1776,
+        -696
+      ],
+      "id": "e9605e6e-c4b6-40cf-b610-d3ee84f13a23",
+      "name": "When chat message received",
+      "webhookId": "2c091acb-0e62-47e2-8c30-c6eb4998f481"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.0-flash-lite-preview",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        2680,
+        -472
+      ],
+      "id": "c6626c41-8d76-4bc9-9edc-fb995fac2b91",
+      "name": "Google Gemini Chat Model2",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "oGSnDSpQ0ezJMN1E",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.5-flash-lite",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        4216,
+        -472
+      ],
+      "id": "b9aaa08d-7db1-44d7-b5d2-d567a18fab68",
+      "name": "Google Gemini Chat Model3",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "oGSnDSpQ0ezJMN1E",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.prompt }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        2672,
+        -696
+      ],
+      "id": "03cd1937-08ea-40a3-b6bc-8d25b47fc27d",
+      "name": "AI Agent3"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a helpful assistant that transforms SQL query results into clear, professional summaries for end users. Given the following input:\nobjects\n{{ Columns = $json[\"rows\"].last().keys()}}\n{{ Values = $json[\"rows\"].map((item)=> item.values()); \n  \n}}\n\nGenerate a well-structured summary with the following components: 1. 📋 **Summary Explanation** Provide a concise explanation of what the returned data represents. \n\n2. 🧠 **Analytics** Provide analytics on the datato find patterns.\n\n3. 📊 **Formatted Results Table** Display the raw SQL results in a clean and readable Markdown table, ensuring: \n* Proper column headers \n* Neat alignment \n* No truncation or overflow \n* Added Padding and Extra Spacing between columns !IMPORTANT \n* Add spacing after data\n* Convert column headers to Title Case Ensure the entire response is well-formatted, user-friendly, and suitable for presentation or reporting purposes. The output is intended for markdown",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        4144,
+        -696
+      ],
+      "id": "80bbf0be-6d3e-46d2-a687-2906cbe8c9c4",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "90a9f433-8819-4b1c-97b8-2be0212515c4",
+              "leftValue": "={{ $json.success }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2448,
+        -1456
+      ],
+      "id": "efa8b497-04fb-4521-83c4-494754d7c396",
+      "name": "If3"
+    },
+    {
+      "parameters": {
+        "url": "http://127.0.0.1:8000/refresh-metadata",
+        "options": {
+          "timeout": 80000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2000,
+        -1456
+      ],
+      "id": "ca80629d-6b7d-4ae6-8606-2fe377c731e2",
+      "name": "Refresh DB Metadata1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://127.0.0.1:8000/embed-metadata?owner=CHATBOT_USER",
+        "options": {
+          "timeout": 800000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2224,
+        -1456
+      ],
+      "id": "df136855-2e88-48b8-ab6a-bda17cc1eba3",
+      "name": "Run Embedding Pipeline1"
+    },
+    {
+      "parameters": {
+        "method": "=POST",
+        "url": "http://127.0.0.1:8000/similar-metadata",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"query\": \"Vehicles\"\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2672,
+        -1456
+      ],
+      "id": "d38f29a4-89bf-430a-9f74-5beabf04a625",
+      "name": "Test Similar Metadata1"
+    },
+    {
+      "parameters": {
+        "content": "## Metadata Ingestion Workflow:\nAdds Embeddings for Metadata and Tests with one table name.\nTo Be Run: Periodically or On Change in Tables.",
+        "height": 120,
+        "width": 380,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        3856,
+        -1456
+      ],
+      "typeVersion": 1,
+      "id": "cfe83e37-59d1-4051-8b53-6885dbadda62",
+      "name": "Metadata Ingestion1"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('When chat message received').item.json.sessionId }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        2808,
+        -472
+      ],
+      "id": "fac085bc-b5f3-4547-a0c8-05a61d702c9a",
+      "name": "Simple Memory1"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [\n  {\n    json: {\n      query: $input.first().json.chatInput\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2000,
+        -696
+      ],
+      "id": "b92ce305-0ed1-49c3-9b62-41d7052d5773",
+      "name": "Convert to JSON1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const userQuery = $('Convert to JSON1').first().json.query;\nconst metadata = $input.first().json.context;\n\nconst prompt = `\nYou are a helpful assistant. Your job is to translate natural language questions into SQL queries that can be executed on an Oracle database.\n\nUser request: ${userQuery}\n\nRelevant DB Metadata (tables, columns, FKs):\n${JSON.stringify(metadata, null, 2)}\n\nYour task is to output only a valid SQL query using Oracle syntax. \nDo not include any explanation, comments, or text outside the query.\n\nWhen generating queries:\n* Always respect foreign key relationships and join related tables when needed to retrieve meaningful or complete information.\n* If a column is a foreign key, consider joining with the referenced table to get descriptive fields (e.g., product name instead of product_id).\n* Use appropriate table aliases for readability if joining multiple tables.\n* Ensure the query reflects the intent of the user's question, even if it requires joining across multiple related tables.\n* Ensure not to include ID fields unless specifically asked for.\n\nAlways output only a raw SQL query. Do not include any markdown formatting, comments, or extra explanation — just the query.\n`;\n\nreturn [{ json: { prompt } }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2448,
+        -696
+      ],
+      "id": "8989b430-578e-4286-9f72-c9df06dd07a9",
+      "name": "Generate Custom Prompt1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\nconst updatedItems = items.map((item) => {\n  let query = item?.json?.output;\n\n  if (!query) return item;\n\n  // Clean up the query first\n  query = query.replace(/^```sql\\\\n|^```sql\\n|^```sql\\r\\n/, \"\")\n               .replace(/\\\\n```$|\\n```$|\\r\\n```$/, \"\")\n               .replace(/\\\\n/g, \"\\n\")\n               .replace(/;\\s*$/, \"\")\n               .trim();\n\n  // Convert to uppercase to check if it's a SELECT query\n  const upperQuery = query.toUpperCase();\n  \n  if (upperQuery.startsWith(\"SELECT\")) {\n    // Handle case sensitivity for table and column names\n    query = query.replace(/\\b(FROM|JOIN)\\s+(\\w+)/gi, (match, keyword, tableName) => {\n      return `${keyword} \"${tableName.toUpperCase()}\"`;\n    });\n\n    // Handle column names in SELECT clause\n    query = query.replace(/\\bSELECT\\s+(.*?)\\bFROM/gi, (match, columnsPart) => {\n      const processedColumns = columnsPart.split(',').map(col => {\n        const trimmedCol = col.trim();\n        if (trimmedCol && !trimmedCol.includes('(') && !trimmedCol.includes('*')) {\n          return `\"${trimmedCol.toUpperCase()}\"`;\n        }\n        return trimmedCol;\n      }).join(', ');\n      \n      return `SELECT ${processedColumns} FROM`;\n    });\n\n    // Handle WHERE clause with string comparisons - make them case-insensitive\n    if (query.includes(\"WHERE\")) {\n      query = query.replace(/\\bWHERE\\s+(.*)/gi, (match, whereClause) => {\n        // Handle = comparisons with strings\n        let processedWhere = whereClause.replace(/(\\w+)\\s*=\\s*'([^']*)'/gi, (conditionMatch, column, value) => {\n          if (isNaN(value) && value !== 'NULL' && value !== 'null') {\n            return `UPPER(\"${column.toUpperCase()}\") = UPPER('${value}')`;\n          }\n          return conditionMatch;\n        });\n\n        // Handle LIKE comparisons\n        processedWhere = processedWhere.replace(/(\\w+)\\s+LIKE\\s+'([^']*)'/gi, (conditionMatch, column, value) => {\n          return `UPPER(\"${column.toUpperCase()}\") LIKE UPPER('${value}')`;\n        });\n\n        return `WHERE ${processedWhere}`;\n      });\n    }\n  }\n\n  // Clean up spacing\n  query = query.replace(/\\s+/g, \" \").trim();\n  \n  item.json.output = query;\n  return item;\n});\n\nreturn updatedItems;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3024,
+        -696
+      ],
+      "id": "bd8bae3a-1c11-4373-954a-23cfce9fdeb5",
+      "name": "Clean Up SQL1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://127.0.0.1:8000/similar-metadata",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "query",
+              "value": "={{ $json.query }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2224,
+        -696
+      ],
+      "id": "c8f0ead1-df0b-4f56-91e2-c53f4589f82c",
+      "name": "Get Table Metadata1"
+    },
+    {
+      "parameters": {
+        "url": "http://127.0.0.1:8000/db-direct?",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "query",
+              "value": "={{$json.output}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3248,
+        -696
+      ],
+      "id": "59d193e8-bc74-4e9c-a21c-c67d24855184",
+      "name": "Get Output from Oracle1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\n\n\n// Flatten each row to a readable format\n// const rows = temp.map((item, index) => {\n//   const row = item;\n//   const readable = Object.entries(row)\n//     .map(([key, value]) => `**${key}**: ${value}`)\n//     .join(', ');\n//   return `Row ${index + 1}: ${readable}`;\n// });\n\nreturn [\n  {\n    json: {\n      success: items[0].json.success,\n      rows: items[0].json.results\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3472,
+        -696
+      ],
+      "id": "2f1c1a40-df49-4c3c-8eac-cad477f9e2b5",
+      "name": "Get Outputs1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "7e1204dc-a1b6-4c29-acfa-c64fb2a5c01b",
+              "leftValue": "={{ $json.success }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        3696,
+        -696
+      ],
+      "id": "b32b212a-3c8a-4116-b7c5-f2890cfbd94d",
+      "name": "Success Test1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "9f40634d-dafb-4ac7-9af3-d15c45d21897",
+              "leftValue": "={{ $json.rows.error }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notExists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        3920,
+        -696
+      ],
+      "id": "aaac553f-4619-4bbb-aea6-38cd6b5f66ee",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "content": "## Test Query Workflow\nSee Responses and accuracy using n8n chat only. ",
+        "height": 220,
+        "width": 220
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        5056,
+        -128
+      ],
+      "typeVersion": 1,
+      "id": "3d1af3a7-66c1-4f86-b562-3bf7b44dbfeb",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        1776,
+        -1456
+      ],
+      "id": "bcda7146-af80-4013-a445-e6e08ef1fe22",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "content": "## Webhook Query Workflow\n**Gets response from frontend -> activates -> get metadata -> generate custom prompt with metadata -> generate sql -> get results",
+        "width": 320
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1424,
+        -928
+      ],
+      "typeVersion": 1,
+      "id": "14b31d8c-8ee0-4f75-93ee-4f837d5b0634",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "03e650c2-18be-4c37-903a-4e99bddcc8b1",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        1792,
+        -1104
+      ],
+      "id": "f7a64be5-a40b-4e7e-902e-bd8731796bd8",
+      "name": "Webhook",
+      "webhookId": "03e650c2-18be-4c37-903a-4e99bddcc8b1",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "content": "## User Query Workflow\n**User types message -> get metadata -> generate custom prompt with metadata -> generate sql -> get results",
+        "width": 320,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2592,
+        1072
+      ],
+      "typeVersion": 1,
+      "id": "a7a91390-640a-4d77-8933-9c1b10f8e844",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "## Improvements \n1. Accuracy of similar-metadata function \n2. Prompts for final output agent"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        6016,
+        1536
+      ],
+      "typeVersion": 1,
+      "id": "ce9607fb-23c3-4ddf-a2e2-98703ea636a1",
+      "name": "Sticky Note5"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent2": {
+      "main": [
+        [
+          {
+            "node": "Clean Up SQL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to JSON": {
+      "main": [
+        [
+          {
+            "node": "Get Table Metadata",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Custom Prompt": {
+      "main": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clean Up SQL": {
+      "main": [
+        [
+          {
+            "node": "Get Output from Oracle",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Table Metadata": {
+      "main": [
+        [
+          {
+            "node": "Generate Custom Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Output from Oracle": {
+      "main": [
+        [
+          {
+            "node": "Get Outputs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Outputs": {
+      "main": [
+        [
+          {
+            "node": "Success Test",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Success Test": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Convert to JSON1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent3",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent3": {
+      "main": [
+        [
+          {
+            "node": "Clean Up SQL1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If3": {
+      "main": [
+        [
+          {
+            "node": "Test Similar Metadata1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Refresh DB Metadata1": {
+      "main": [
+        [
+          {
+            "node": "Run Embedding Pipeline1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run Embedding Pipeline1": {
+      "main": [
+        [
+          {
+            "node": "If3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory1": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent3",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to JSON1": {
+      "main": [
+        [
+          {
+            "node": "Get Table Metadata1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Custom Prompt1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clean Up SQL1": {
+      "main": [
+        [
+          {
+            "node": "Get Output from Oracle1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Table Metadata1": {
+      "main": [
+        [
+          {
+            "node": "Generate Custom Prompt1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Output from Oracle1": {
+      "main": [
+        [
+          {
+            "node": "Get Outputs1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Outputs1": {
+      "main": [
+        [
+          {
+            "node": "Success Test1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Success Test1": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Refresh DB Metadata1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Convert to JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "37aa27c5-80ae-435f-97cd-74ef396a2b18",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "90b808ffc3b7e9f6683045420eea737c695b5d4180e3671bdfecba258b0078d2"
+  },
+  "id": "VdEhXZSWb3M6wi7Q",
+  "tags": []
+}

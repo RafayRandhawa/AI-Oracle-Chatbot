@@ -9,6 +9,23 @@ import { sendToN8n } from "../services/chatApi";
 import remarkGfm from "remark-gfm"; // Enable GitHub-flavored markdown (tables, etc.)
 import { useAuth } from "../auth/authContext"; // For authentication context
 import {createSession} from "../services/sessions";
+import { storeMessages, getMessages } from "../services/sessions"; 
+
+
+function TypingIndicator({ theme }) {
+  return (
+    <div className="flex items-center space-x-2 px-4">
+      <span className="flex space-x-1">
+        <span className={`w-2 h-2 rounded-full animate-bounce ${theme === "dark" ? "bg-gray-300" : "bg-gray-600"}`}></span>
+        <span className={`w-2 h-2 rounded-full animate-bounce delay-150 ${theme === "dark" ? "bg-gray-300" : "bg-gray-600"}`}></span>
+        <span className={`w-2 h-2 rounded-full animate-bounce delay-300 ${theme === "dark" ? "bg-gray-300" : "bg-gray-600"}`}></span>
+      </span>
+      <span className="text-gray-500 text-sm">Thinking...</span>
+    </div>
+  );
+}
+
+
 export default function ChatUI({ messages, setMessages , currentSessionId, setCurrentSessionId }) {
   // Controlled input state for the message field.
   const [input, setInput] = useState("");
@@ -90,6 +107,7 @@ const { user, token } = useAuth(); // Get current user from auth context
         return updated;
       });
     } finally {
+
       setIsStreaming(false);
     }
   };
@@ -235,6 +253,8 @@ const { user, token } = useAuth(); // Get current user from auth context
             </div>
           );
         })}
+         {/* Show typing indicator while waiting for assistant */}
+  {isStreaming && <TypingIndicator theme={theme} />}
 
         {/* Dummy div for auto-scrolling to the latest message */}
         <div ref={messagesEndRef} />
