@@ -2,7 +2,7 @@ from nt import error
 from auth.auth_routes import auth_router
 from sessions.session_router import session_router
 from requests import status_codes
-from fastapi import FastAPI, HTTPException, Query, Depends
+from fastapi import FastAPI, HTTPException, Query, Depends, Response
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from ai_handler import generate_sql_from_prompt
@@ -246,3 +246,4 @@ def embed_metadata(owner: str = Query(os.getenv('DB_USER'), description="owner/n
         return JSONResponse(
             status_code=500,
             content={"success": False, "message": "failed", "error": str(e)})
+

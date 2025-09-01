@@ -38,9 +38,10 @@ export async function fetchMe() {
     const res = await axios.get("http://localhost:8000/auth/me", {
       withCredentials: true,
     });
-    return res.data?.user;
+    return res.data?.logged_in === true;
   } catch {
-    return null;
+    return false; 
   }
 }
+
   
