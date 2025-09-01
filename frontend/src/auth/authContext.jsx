@@ -1,6 +1,6 @@
 // AuthContext.jsx
 import React, { createContext, useState,useContext } from "react";
-import { loginUser } from "../services/authService";
+import { loginUser, logoutUser } from "../services/authService";
 // Create the AuthContext to share auth state globally
 export const AuthContext = createContext();
 
@@ -29,10 +29,12 @@ export const AuthProvider = ({ children }) => {
   };
 
   // Logout function - clears stored data
-  const logout = () => {
+  const logout = async () => {
+    console.log("Logging out");
+    await logoutUser();
     setUser(null);
     setToken(null);
-    localStorage.removeItem("token");
+    
   };
 
   return (

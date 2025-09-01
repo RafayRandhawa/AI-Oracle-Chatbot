@@ -1,7 +1,7 @@
 # routes/auth_routes.py
-from fastapi import APIRouter, HTTPException, Depends, Request
+from fastapi import APIRouter, HTTPException, Request, Response
 from pydantic import BaseModel
-from auth.auth_service import login_service
+from auth.auth_service import login_service, get_current_user_from_cookie, get_user_by_id
 from fastapi.responses import JSONResponse
 import os
 
@@ -37,3 +37,23 @@ def login(request: LoginRequest):
     print(f"Response: {response.body}")  # Log the response body
     print(f"Cookies: {response.headers.get('set-cookie')}")  # Log the set-cookie header
     return response
+@auth_router.post("/logout")
+async def logout(response: Response):
+    # Clear cookie by setting it with empty value and immediate expiry
+    response = JSONResponse({"message": "Logout successful"})
+    response.delete_cookie(
+        key="auth_token",   
+        path="/"
+    )
+    return response
+
+@auth_router.get("/me")
+def me(request: Request):
+    """
+    Returns details about the currently logged-in user.
+    """
+    try:
+        user = get_user_by_id(request)  
+        return JSONResponse(content={"logged_in": True})
+    except Exception:
+        return JSONResponse(content={"logged_in": False})

@@ -12,23 +12,25 @@ import {
   IconSettings,
   IconUserBolt,
 } from "@tabler/icons-react";
-
+import { useAuth } from "./auth/authContext";
 import { getSessions, getMessages } from "./services/sessions";
+import ProtectedRoute from "./auth/ProtectedRoute";
+function AppContent() {
 
-export default function App() {
   const [open, setOpen] = useState(false);
   const [chatSessions, setChatSessions] = useState([]);
   const [error, setError] = useState(null); // Track errors
   const [messages, setMessages] = useState([]);
   const sidebarRef = useRef(null);
   const [currentSessionId, setCurrentSessionId] = useState(null);
+  const { logout } = useAuth();
   
   useEffect(() => {
     const hash = window.location.hash; // e.g., "#session-123"
     if (hash.startsWith("#session-")) {
       const sessionId = hash.split("-")[1]; // Extract "123"
       setCurrentSessionId(sessionId);
-     
+
     }
   }, []);
 
@@ -37,7 +39,7 @@ export default function App() {
       try {
         const data = await getMessages(sessionId);
         console.log("Fetched messages for session", sessionId, data);
-  
+
         // Normalize data into an array
         if (Array.isArray(data)) {
           setMessages(data);
@@ -52,7 +54,7 @@ export default function App() {
         setMessages([]); // fallback to empty on error
       }
     }
-  
+
     // Only fetch messages if we have a valid session ID
     if (currentSessionId) {
       fetchMessages(currentSessionId);
@@ -61,7 +63,14 @@ export default function App() {
       setMessages([]);
     }
   }, [currentSessionId]);
-  
+
+
+
+  const handleLogout = () => {
+    logout();
+    window.location.href("/");
+  };
+
   useEffect(() => {
     async function fetchSessions() {
       try {
@@ -77,105 +86,119 @@ export default function App() {
   }, []);
 
   return (
+
+
+    <Routes>
+      <Route path="/" element={<Login />} />
+      <Route path="/chat" element={
+        <ProtectedRoute>
+          <div className="flex h-screen">
+            <Sidebar ref={sidebarRef} open={open} setOpen={setOpen} animate={false} className="w-1/4">
+              <SidebarBody className="justify-between gap-10">
+                <div className="flex flex-1 flex-col overflow-x-hidden overflow-y-auto">
+                  {/* New Chat button at the top */}
+                  <div className="mt-4 mb-2">
+                    <SidebarLink
+                      link={{
+                        label: "New Chat",
+                        href: "#",
+                        icon: (
+                          <IconUserBolt className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
+                        ),
+                      }}
+                      onClick={() => {
+                        // Clear messages & start new session
+
+                        setMessages([]);
+                        setCurrentSessionId(null);
+                        console.log("🆕 New chat started!");
+                      }}
+                    />
+                  </div>
+                  {/* List of chat sessions */}
+                  <div className="mt-8 flex flex-col gap-2">
+                    {error ? (
+                      <div className="error-message">{error}</div> // Display error message
+                    ) : chatSessions.length > 0 ? (
+                      chatSessions.map((session) => (
+                        <SidebarLink
+                          key={session.session_id}
+                          link={{
+                            label: session.title, // Display the name of the chat session
+                            href: `#session-${session.session_id}`, // Link to the specific chat session
+                            icon: (
+                              <IconBrandTabler className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
+                            ),
+                          }}
+                        />
+                      ))
+                    ) : (
+                      <div>No chat sessions available.</div> // Fallback content
+                    )}
+                  </div>
+                </div>
+                {/* Account section at the bottom of the sidebar */}
+                <div className="border-t border-neutral-300 dark:border-neutral-700 pt-4">
+                  {/* User name and avatar */}
+                  <SidebarLink
+                    link={{
+                      label: "User Name",
+                      href: "#",
+                      icon: (
+                        <img
+                          src="https://placehold.co/300x300?text=L"
+                          className="h-7 w-7 shrink-0 rounded-full"
+                          width={50}
+                          height={50}
+                          alt="Avatar"
+                        />
+                      ),
+                    }}
+                  />
+                  {/* Logout option */}
+                  <SidebarLink
+                    link={{
+                      label: "Logout",
+                      href: "#logout",
+                      icon: (
+                        <IconArrowLeft className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
+                      ),
+                    }}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleLogout();
+                    }}
+                  />
+                </div>
+                {/* Conditionally render ThemeSwitch */}
+
+                <div>
+                  <ThemeSwitch />
+                </div>
+
+              </SidebarBody>
+            </Sidebar>
+            <div className="flex-1">
+              <ChatUI
+                messages={messages}
+                setMessages={setMessages}
+                currentSessionId={currentSessionId}
+                setCurrentSessionId={setCurrentSessionId}
+              />
+            </div>
+          </div>
+        </ProtectedRoute>
+      } />
+    </Routes>
+
+  )
+}
+export default function App() {
+  return (
     <ThemeProvider>
       <AuthProvider>
         <Router>
-          <Routes>
-            <Route path="/" element={<Login />} />
-            <Route path="/chat" element={
-              <div className="flex h-screen">
-                <Sidebar ref={sidebarRef} open={open} setOpen={setOpen} animate={false} className="w-1/4">
-                  <SidebarBody className="justify-between gap-10">
-                    <div className="flex flex-1 flex-col overflow-x-hidden overflow-y-auto">
-                      {/* New Chat button at the top */}
-                      <div className="mt-4 mb-2">
-                        <SidebarLink
-                          link={{
-                            label: "New Chat",
-                            href: "#",
-                            icon: (
-                              <IconUserBolt className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
-                            ),
-                          }}
-                          onClick={() => {
-                            // Clear messages & start new session
-                          
-                            setMessages([]);
-                            setCurrentSessionId(null);
-                            console.log("🆕 New chat started!");
-                          }}
-                        />
-                      </div>
-                      {/* List of chat sessions */}
-                      <div className="mt-8 flex flex-col gap-2">
-                        {error ? (
-                          <div className="error-message">{error}</div> // Display error message
-                        ) : chatSessions.length > 0 ? (
-                          chatSessions.map((session) => (
-                            <SidebarLink
-                              key={session.session_id}
-                              link={{
-                                label: session.title, // Display the name of the chat session
-                                href: `#session-${session.session_id}`, // Link to the specific chat session
-                                icon: (
-                                  <IconBrandTabler className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
-                                ),
-                              }}
-                            />
-                          ))
-                        ) : (
-                          <div>No chat sessions available.</div> // Fallback content
-                        )}
-                      </div>
-                    </div>
-                    {/* Account section at the bottom of the sidebar */}
-                    <div className="border-t border-neutral-300 dark:border-neutral-700 pt-4">
-                      {/* User name and avatar */}
-                      <SidebarLink
-                        link={{
-                          label: "User Name",
-                          href: "#",
-                          icon: (
-                            <img
-                              src="https://placehold.co/300x300?text=L"
-                              className="h-7 w-7 shrink-0 rounded-full"
-                              width={50}
-                              height={50}
-                              alt="Avatar"
-                            />
-                          ),
-                        }}
-                      />
-                      {/* Logout option */}
-                      <SidebarLink
-                        link={{
-                          label: "Logout",
-                          href: "#logout",
-                          icon: (
-                            <IconArrowLeft className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
-                          ),
-                        }}
-                      />
-                    </div>
-                    {/* Conditionally render ThemeSwitch */}
-
-                    <div>
-                      <ThemeSwitch />
-                    </div>
-
-                  </SidebarBody>
-                </Sidebar>
-                <div className="flex-1">
-                  <ChatUI
-                    messages={messages}
-                    setMessages={setMessages}
-                    currentSessionId={currentSessionId}
-                    setCurrentSessionId={setCurrentSessionId}
-                  />
-                </div>
-              </div>
-            } />
-          </Routes>
+          <AppContent /> {/* 👈 AppContent lives inside AuthProvider */}
         </Router>
       </AuthProvider>
     </ThemeProvider>

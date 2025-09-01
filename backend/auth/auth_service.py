@@ -87,3 +87,22 @@ def get_current_user_from_cookie(request: Request):
         raise HTTPException(status_code=401, detail="Invalid Token")
     
     
+def get_user_by_id(request: Request):
+    """Fetch user details from the database by ID"""
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+        user_id = get_current_user_from_cookie(request)
+        user = cursor.execute(
+            "SELECT id, username, email FROM users WHERE id = :1", (user_id,)
+        ).fetchone()
+    except Exception as e:
+        print(f"Error fetching user by ID: {e}")
+        raise HTTPException(status_code=401, detail="Invalid Token")
+    finally:
+        conn.close()
+
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    return {"id": user[0], "username": user[1], "email": user[2]}
