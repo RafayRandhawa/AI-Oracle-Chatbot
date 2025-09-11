@@ -9,7 +9,7 @@ import { sendToN8n } from "../services/chatApi";
 import remarkGfm from "remark-gfm"; // Enable GitHub-flavored markdown (tables, etc.)
 import { useAuth } from "../auth/authContext"; // For authentication context
 import {createSession} from "../services/sessions";
-import { storeMessages, getMessages } from "../services/sessions"; 
+import { storeMessages } from "../services/sessions"; 
 
 
 function TypingIndicator({ theme }) {
@@ -93,21 +93,44 @@ const { user, token } = useAuth(); // Get current user from auth context
       const markdown = await sendToN8n(userMessage.content,token);
 
       // 4) Replace the placeholder assistant message with the markdown.
+      const assistantMessage = { role: "assistant", content: markdown };
       setMessages((prev) => {
         const updated = [...prev];
-        updated[assistantIndex] = { role: "assistant", content: markdown };
+        updated[assistantIndex] = assistantMessage;
         return updated;
       });
+
+      // 5) Save both messages to the database if we have a session
+      if (currentSessionId) {
+        try {
+          await storeMessages(currentSessionId, userMessage);
+          await storeMessages(currentSessionId, assistantMessage);
+          console.log("Messages saved to database for session:", currentSessionId);
+        } catch (saveError) {
+          console.error("Failed to save messages to database:", saveError);
+          toast.error("Failed to save messages to database");
+        }
+      }
     } catch (err) {
       // If something goes wrong, notify the user and insert a friendly fallback.
       toast.error(err.message || "Failed to fetch response");
+      const errorMessage = { role: "assistant", content: "Sorry, I couldn't get a response." };
       setMessages((prev) => {
         const updated = [...prev];
-        updated[assistantIndex] = { role: "assistant", content: "Sorry, I couldn't get a response." };
+        updated[assistantIndex] = errorMessage;
         return updated;
       });
-    } finally {
 
+      // Save user message and error message to database if we have a session
+      if (currentSessionId) {
+        try {
+          await storeMessages(currentSessionId, userMessage);
+          await storeMessages(currentSessionId, errorMessage);
+        } catch (saveError) {
+          console.error("Failed to save error messages to database:", saveError);
+        }
+      }
+    } finally {
       setIsStreaming(false);
     }
   };

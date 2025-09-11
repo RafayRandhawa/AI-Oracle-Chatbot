@@ -1,4 +1,3 @@
-from nt import error
 from auth.auth_routes import auth_router
 from sessions.session_router import session_router
 from requests import status_codes
@@ -8,6 +7,7 @@ from pydantic import BaseModel
 from ai_handler import generate_sql_from_prompt
 from db_handler import execute_query,parameterize_query,is_safe_query,extract_db_metadata
 import os
+import oracledb
 from fastapi.responses import JSONResponse
 from embedder import embed_texts
 from pinecone_utils import  query_similar_metadata
@@ -26,11 +26,11 @@ app.include_router(auth_router, prefix="/auth", tags=["Authentication"])
 app.include_router(session_router, prefix="/sessions", tags=["Sessions"])
 
 origins = [
-    "http://localhost:5173",   # Front
-    "http://localhost:5678",
-    "http://10.0.1.31:5173"
-    "http://10.0.1.31:4173",   
-    "http://10.0.1.31:5678"# N8N
+    "http://localhost:5173",   # Frontend
+    "http://localhost:5678",   # N8N
+    "http://10.0.1.31:5173",   # Frontend (alternative)
+    "http://10.0.1.31:4173",   # Frontend (alternative)
+    "http://10.0.1.31:5678"    # N8N (alternative)
 ]
 
 app.add_middleware(
@@ -70,23 +70,26 @@ def query_database(request: QueryRequest):
         generated_sql = generate_sql_from_prompt(request.prompt)
         print(f"generated_sql: {generated_sql}\n\n")
         # Optional: If AI fails to generate proper SQL
-        if not generated_sql.strip().lower().startswith(("select", "insert", "update" "create")):
+        if not generated_sql.strip().lower().startswith(("select", "insert", "update", "create")):
            raise HTTPException(status_code=400, detail="AI did not generate a valid SQL query.")
         if not is_safe_query(generated_sql):
             return JSONResponse(
-            status_code=500,
-            content={"success": False, "data": None, "error": f"Database Error: {str(e)}"}
-        )
+                status_code=500,
+                content={"success": False, "data": None, "error": "Query is not safe"}
+            )
         parameterized_sql, params = parameterize_query(generated_sql)
-        print(f"Parameteized Query: {parameterized_sql}\n\nParameters: {params}\n\n")
+        print(f"Parameterized Query: {parameterized_sql}\n\nParameters: {params}\n\n")
 
         db_result = execute_query(query=parameterized_sql,params=params)
         print(f"db_result: {db_result}\n\n")
         
         if isinstance(db_result,dict) and "error" in db_result:
-            return f"{db_result['error']}: {db_result['message']}"
+            return JSONResponse(
+                status_code=500,
+                content={"success": False, "data": None, "error": f"{db_result['error']}: {db_result['message']}"}
+            )
         else:
-        # 3. Return both the generated SQL and database result
+            # 3. Return both the generated SQL and database result
             return QueryResponse(generated_sql=generated_sql, results=db_result)
 
     except oracledb.DatabaseError as e:
@@ -118,7 +121,7 @@ def db_direct(query:str):
         query,params = parameterize_query(query)
         if(is_safe_query(query)):
             db_result = execute_query(query=query, params=params)
-            return {"success": True, 'results': query,  "results": db_result}
+            return {"success": True, "query": query, "results": db_result}
         else:
             return JSONResponse(
                 status_code=500,
@@ -183,6 +186,11 @@ def semantic_metadata_search(req: SimilarRequest):
             content={"success": False, "message": "failed", "error": str(e)}
         )
  
+@app.get("/health")
+def health_check():
+    """Health check endpoint for monitoring"""
+    return {"status": "healthy", "service": "Oracle AI Chatbot API"}
+
 @app.on_event("startup")
 def preload_embeddings():
     metadata = extract_db_metadata(force_refresh=False)
@@ -196,24 +204,6 @@ def embed_metadata(owner: str = Query(os.getenv('DB_USER'), description="owner/n
     Trigger the full metadata -> embeddings -> upsert pipeline on demand.
     """
     try:
-        # Force refresh the cache to get fresh metadata
-        metadata = extract_db_metadata(owner=owner, force_refresh=True)
-        
-        if not metadata:
-            return JSONResponse(
-                status_code=400,
-                content={
-                    "success": False, 
-                    "message": "No metadata extracted from database",
-                    "details": f"Owner '{owner}' has tables but metadata extraction failed. Check server logs."
-                }
-            )
-        
-        print(f"📊 Starting embedding pipeline for {len(metadata)} tables")
-        # Log the tables we found
-        for table_name in metadata.keys():
-            print(f"   - {table_name}")
-            
         # Force refresh the cache to get fresh metadata
         metadata = extract_db_metadata(owner=owner, force_refresh=True)
         
