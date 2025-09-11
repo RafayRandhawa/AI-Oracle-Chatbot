@@ -1,12 +1,20 @@
 import React from "react";
 import { Navigate } from "react-router-dom";
-import Cookies from "js-cookie";
-import { fetchMe } from "../services/authService";
+import { useAuth } from "./authContext";
 
 export default function ProtectedRoute({ children }) {
-  const token = fetchMe(); // Read cookie
+  const { user, isLoading } = useAuth();
 
-  if (!token) {
+  // Show loading state while checking authentication
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-lg">Loading...</div>
+      </div>
+    );
+  }
+
+  if (!user) {
     // Not logged in, redirect to login page
     console.log("Not logged in, redirecting to login page");
     return <Navigate to="/" replace />;

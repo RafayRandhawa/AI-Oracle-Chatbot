@@ -3,7 +3,7 @@ import axios from 'axios';
 /**
  * API client for your n8n chat workflow
  */
-const N8N_URL ='http://localhost:5678/webhook-test/03e650c2-18be-4c37-903a-4e99bddcc8b1';
+const N8N_URL = process.env.REACT_APP_N8N_URL || 'http://localhost:5678/webhook-test/03e650c2-18be-4c37-903a-4e99bddcc8b1';
 
 /**
  * Sends the user's message to the n8n webhook and returns markdown text.
@@ -20,17 +20,28 @@ const N8N_URL ='http://localhost:5678/webhook-test/03e650c2-18be-4c37-903a-4e99b
 export async function sendToN8n(userMessage, token) {
   try {
     console.log("token to n8n", token)
-    const res = await axios.post(N8N_URL, { message: userMessage, 
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token["access_token"]}` // if needed
-      },
+    
+    // Prepare the request payload and headers
+    const payload = { message: userMessage };
+    const headers = {
+      'Content-Type': 'application/json',
+    };
+    
+    // Add Authorization header if token is available
+    if (token && token.access_token) {
+      headers['Authorization'] = `Bearer ${token.access_token}`;
+    }
+    
+    const res = await axios.post(N8N_URL, payload, { 
+      headers,
+      timeout: 30000 // 30 second timeout for AI processing
     });
     const data = res?.data[0];
-    console.log(data)
+    console.log("N8N response:", data)
+    
     // Normalize likely shapes returned by n8n
     if (typeof data === 'string') return data; // plain markdown string
-    if (data?.output) return data.output;  // { markdown: '...' }
+    if (data?.output) return data.output;  // { output: '...' }
     if (data?.result) return data.result;      // { result: '...' }
     
     // Fallback: stringify unknown response shapes

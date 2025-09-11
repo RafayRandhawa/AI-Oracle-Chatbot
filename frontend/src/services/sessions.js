@@ -1,14 +1,19 @@
 import axios from "axios";
 
+const API_BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:8000";
+
 // Create a new session
 export async function createSession(title) {
   try {
     console.log("Making createSession request with title:", title);
 
     const res = await axios.post(
-      "http://localhost:8000/sessions/create-session",
+      `${API_BASE_URL}/sessions/create-session`,
       { title },
-      { withCredentials: true }
+      { 
+        withCredentials: true,
+        timeout: 10000 // 10 second timeout
+      }
     );
 
     console.log("createSession response:", res.data);
@@ -26,8 +31,9 @@ export async function createSession(title) {
 // Get all sessions
 export async function getSessions() {
   try {
-    const res = await axios.get("http://localhost:8000/sessions/get-sessions", {
+    const res = await axios.get(`${API_BASE_URL}/sessions/get-sessions`, {
       withCredentials: true,
+      timeout: 10000 // 10 second timeout
     });
     console.log(res.data["sessions"]);
     return res.data["sessions"] || [];
@@ -42,8 +48,11 @@ export async function getSessions() {
 export async function getMessages(sessionId) {
   try {
     const res = await axios.get(
-      `http://localhost:8000/sessions/get-messages/${sessionId}`,
-      { withCredentials: true }
+      `${API_BASE_URL}/sessions/get-messages/${sessionId}`,
+      { 
+        withCredentials: true,
+        timeout: 10000 // 10 second timeout
+      }
     );
     return res.data["messages"] || [];
   } catch (error) {
@@ -63,9 +72,12 @@ export async function storeMessages(sessionId, message) {
 
   try {
     const res = await axios.post(
-      `http://localhost:8000/sessions/set-messages/${sessionId}`,
+      `${API_BASE_URL}/sessions/set-messages/${sessionId}`,
       content,
-      { withCredentials: true }
+      { 
+        withCredentials: true,
+        timeout: 10000 // 10 second timeout
+      }
     );
     return res.data;
   } catch (error) {

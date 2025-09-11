@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, use } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ThemeProvider, useTheme } from './components/theme-context.jsx';
 import ChatUI from './components/chat-ui.jsx';
 import ThemeSwitch from './components/theme-switch.jsx';
@@ -68,7 +68,7 @@ function AppContent() {
 
   const handleLogout = () => {
     logout();
-    window.location.href("/");
+    window.location.href = "/";
   };
 
   useEffect(() => {
@@ -108,9 +108,10 @@ function AppContent() {
                       }}
                       onClick={() => {
                         // Clear messages & start new session
-
                         setMessages([]);
                         setCurrentSessionId(null);
+                        // Clear URL hash to remove session reference
+                        window.location.hash = "";
                         console.log("🆕 New chat started!");
                       }}
                     />
@@ -129,6 +130,12 @@ function AppContent() {
                             icon: (
                               <IconBrandTabler className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
                             ),
+                          }}
+                          onClick={() => {
+                            // Set the current session and update URL hash
+                            setCurrentSessionId(session.session_id);
+                            window.location.hash = `session-${session.session_id}`;
+                            console.log("📂 Loading session:", session.session_id);
                           }}
                         />
                       ))

@@ -1,10 +1,12 @@
 import axios from "axios";
 
+const API_BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:8000";
+
 // Login (sets cookies on success)
 export async function loginUser(username, password) {
   try {
     const res = await axios.post(
-      "http://localhost:8000/auth/login",
+      `${API_BASE_URL}/auth/login`,
       { username, password },
       { withCredentials: true,
         validateStatus: () => true
@@ -26,7 +28,7 @@ export async function loginUser(username, password) {
 // Logout (clears cookies)
 export async function logoutUser() {
   await axios.post(
-    "http://localhost:8000/auth/logout",
+    `${API_BASE_URL}/auth/logout`,
     {},
     { withCredentials: true }
   );
@@ -35,11 +37,13 @@ export async function logoutUser() {
 // Get current user
 export async function fetchMe() {
   try {
-    const res = await axios.get("http://localhost:8000/auth/me", {
+    const res = await axios.get(`${API_BASE_URL}/auth/me`, {
       withCredentials: true,
+      timeout: 5000, // 5 second timeout
     });
     return res.data?.logged_in === true;
-  } catch {
+  } catch (error) {
+    console.error("Auth check failed:", error);
     return false; 
   }
 }
