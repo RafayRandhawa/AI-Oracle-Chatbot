@@ -1,3 +1,5 @@
+python-dotenv
+requests
 annotated-types==0.7.0
 anyio==4.9.0
 cachetools==5.5.2

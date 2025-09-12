@@ -1,3 +1,4 @@
+
 from auth.auth_routes import auth_router
 from sessions.session_router import session_router
 from requests import status_codes
@@ -22,15 +23,17 @@ app = FastAPI(
     description="Converts user prompts into SQL queries, executes them on Oracle DB, and returns the results.",
     version="1.0.0"
 )
-app.include_router(auth_router, prefix="/auth", tags=["Authentication"])
-app.include_router(session_router, prefix="/sessions", tags=["Sessions"])
+
+
 
 origins = [
     "http://localhost:5173",   # Frontend
     "http://localhost:5678",   # N8N
-    "http://10.0.1.31:5173",   # Frontend (alternative)
-    "http://10.0.1.31:4173",   # Frontend (alternative)
-    "http://10.0.1.31:5678"    # N8N (alternative)
+    "http://10.0.1.74:5173",   # Frontend (alternative)
+    "http://10.0.1.74:4173",   # Frontend (alternative)
+    "http://10.0.1.74:5678",    # N8N (alternative)
+    "http://localhost:3000",    # Frontend (alternative)
+    "http://10.0.1.74:3000", 
 ]
 
 app.add_middleware(
@@ -40,6 +43,14 @@ app.add_middleware(
     allow_methods=["*"], 
     allow_headers=["*"],  
 )
+
+# Health endpoint for Docker healthcheck
+#@app.get("/health")
+#def health():
+#    return JSONResponse(content={"status": "ok"})
+app.include_router(auth_router, prefix="/auth", tags=["Authentication"])
+app.include_router(session_router, prefix="/sessions", tags=["Sessions"])
+
 # Define a Pydantic model for the expected input structure from the frontend
 class QueryRequest(BaseModel):
     prompt: str  # This is the user prompt 

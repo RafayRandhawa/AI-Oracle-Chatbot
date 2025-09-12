@@ -13,7 +13,7 @@ logging.basicConfig(filename="db_errors.log", level=logging.ERROR)
 # Initialize the Oracle Client in 'thick mode' by specifying the Instant Client path.
 # This is REQUIRED for connecting to older versions of Oracle like 11g.
 load_dotenv()
-oracledb.init_oracle_client(lib_dir=os.getenv("INSTANT_CLIENT"))
+#oracledb.init_oracle_client(lib_dir=os.getenv("INSTANT_CLIENT"))
 
 
 DB_USER = os.getenv('DB_USER')

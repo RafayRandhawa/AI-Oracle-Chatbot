@@ -11,6 +11,10 @@ services:
     environment:
       - PYTHONPATH=/app
       - PYTHONUNBUFFERED=1
+      - INSTANT_CLIENT=/opt/oracle/instantclient   # ✅ added
+      - LD_LIBRARY_PATH=/opt/oracle/instantclient  # ✅ added
+    env_file:
+      - ./backend/.env
     volumes:
       - ./backend/logs:/app/logs
     networks:
@@ -21,10 +25,8 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
-    depends_on:
-      - nginx
 
-  # Frontend Service
+  # Frontend Service (React build served by nginx inside container)
   frontend:
     build:
       context: ./frontend
@@ -36,13 +38,11 @@ services:
     networks:
       - oracle-ai-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      test: ["CMD", "curl", "-f", "http://localhost/"]
       interval: 30s
-      timeout: 3s
+      timeout: 5s
       retries: 3
-      start_period: 10s
-    depends_on:
-      - nginx
+      start_period: 15s
 
   # Nginx Reverse Proxy
   nginx:
@@ -54,18 +54,26 @@ services:
       - "443:443"
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./nginx/conf.d:/etc/nginx/conf.d:ro
-      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - ./nginx/conf.d/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./frontend/dist:/usr/share/nginx/html:ro
     networks:
       - oracle-ai-network
+    depends_on:
+      backend:
+        condition: service_healthy
+      frontend:
+        condition: service_healthy
+      # Only depend on n8n if it is actually enabled
+      # n8n:
+      #   condition: service_healthy
     healthcheck:
-      test: ["CMD", "nginx", "-t"]
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:80 || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 10s
 
-  # N8N Service (if needed locally)
+  # N8N Service (optional for workflows)
   n8n:
     image: n8nio/n8n:latest
     container_name: oracle-ai-n8n
@@ -76,17 +84,21 @@ services:
       - N8N_BASIC_AUTH_ACTIVE=true
       - N8N_BASIC_AUTH_USER=admin
       - N8N_BASIC_AUTH_PASSWORD=admin123
-      - N8N_HOST=localhost
+      - N8N_HOST=n8n
       - N8N_PORT=5678
       - N8N_PROTOCOL=http
-      - WEBHOOK_URL=http://localhost:5678/
+      - WEBHOOK_URL=http://n8n:5678/
     volumes:
       - n8n_data:/home/node/.n8n
       - ./workflows:/home/node/.n8n/workflows:ro
     networks:
       - oracle-ai-network
-    profiles:
-      - n8n
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5678/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
 
 networks:
   oracle-ai-network:
