@@ -32,7 +32,7 @@ origins = [
     "http://10.0.1.74:5173",   # Frontend (alternative)
     "http://10.0.1.74:4173",   # Frontend (alternative)
     "http://10.0.1.74:5678",    # N8N (alternative)
-    "http://localhost:3000",    # Frontend (alternative)
+        # Frontend (alternative)
     "http://10.0.1.74:3000", 
 ]
 

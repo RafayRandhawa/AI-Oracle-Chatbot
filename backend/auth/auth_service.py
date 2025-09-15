@@ -48,8 +48,9 @@ def authenticate_user(username: str, password: str):
 
     # if user and verify_password(password, user[2]):
     #     return {"id": user[0], "username": user[1]}
-    
-    if user and password.lower().strip() == user[2].lower().strip():  # Temporary plain text check
+    print(f"Authenticating user: {username} with password: {password}")
+    print(f"Fetched user from DB: {user} with password hash: {user[2] if user else 'N/A'}")
+    if user and password.lower().strip() == user[2]:  # Temporary plain text check
         return {"id": user[0], "username": user[1]}
     return None
 

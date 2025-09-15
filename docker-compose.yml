@@ -89,12 +89,15 @@ services:
       - N8N_PROTOCOL=http
       - WEBHOOK_URL=http://n8n:5678/
       - N8N_SECURE_COOKIE=false
+      - N8N_RUNNERS_ENABLED=true
+      - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true
+      - DB_SQLITE_POOL_SIZE=100000
     volumes:
       - n8n_data:/home/node/.n8n
       - ./workflows:/home/node/.n8n/workflows:ro
     networks:
       - oracle-ai-network
-    command: sh -c "n8n start & sleep 5 && n8n active:workflow --all"
+    
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5678/"]
       interval: 30s

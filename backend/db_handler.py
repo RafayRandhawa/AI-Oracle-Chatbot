@@ -16,7 +16,7 @@ load_dotenv()
 try:
     if platform.system() == "Windows":
         # Use your Windows instantclient path
-        oracledb.init_oracle_client(lib_dir=os.getenv("ORACLE_CLIENT_PATH", r"C:\oracle\instantclient_23_9"))
+        oracledb.init_oracle_client(lib_dir=os.getenv("INSTANT_CLIENT", r"C:\oracle\instantclient_23_9"))
     else:
         # Linux / Docker path
         oracledb.init_oracle_client(lib_dir="/opt/oracle/instantclient")
