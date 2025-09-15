@@ -57,3 +57,15 @@ urllib3==2.5.0
 uvicorn==0.35.0
 python-jose[cryptography]==3.3.0
 passlib[bcrypt]==1.7.4
+fastapi
+uvicorn[standard]
+python-jose[cryptography]   # JWT handling
+passlib[bcrypt]             # password hashing
+python-multipart            # for form-data (login, uploads, etc.)
+oracledb                    # Oracle DB driver
+
+# --- External APIs ---
+requests                    # HTTP requests
+google-generativeai         # Google Gemini API
+pinecone
+
