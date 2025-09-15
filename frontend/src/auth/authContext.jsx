@@ -10,22 +10,23 @@ export const AuthProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
 
   // Check if user already logged in (cookie/session-based)
-  useEffect(() => {
-    const checkAuthStatus = async () => {
-      try {
-        const isLoggedIn = await fetchMe();
-        if (isLoggedIn) {
-          setUser({ username: "admin" }); // fallback user
-          setToken({ access_token: "cookie-based" });
-        }
-      } catch (error) {
-        console.error("Auth check failed:", error);
-      } finally {
-        setIsLoading(false);
+  // AuthContext.jsx
+useEffect(() => {
+  const checkAuthStatus = async () => {
+    try {
+      const me = await fetchMe();
+      if (me) {
+        setUser(me); // set actual backend user
+        setToken({ access_token: "cookie-based" });
       }
-    };
-    checkAuthStatus();
-  }, []);
+    } catch (error) {
+      console.error("Auth check failed:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  checkAuthStatus();
+}, []);
 
   const login = async (username, password) => {
     console.log("Attempting login with:", username, password);

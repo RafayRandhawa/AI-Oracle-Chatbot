@@ -50,15 +50,22 @@ export async function logoutUser() {
 }
 
 // Get current user
+// authService.js
 export async function fetchMe() {
   try {
     const res = await axios.get(`${API_BASE_URL}/auth/me`, {
       withCredentials: true,
-      timeout: 5000, // 5 second timeout
+      timeout: 5000,
     });
-    return res.data?.logged_in === true;
+
+    // Expecting backend to return { logged_in: true, user: {...} }
+    if (res.data?.logged_in) {
+      return res.data.user; // return full user object
+    }
+    return null;
   } catch (error) {
     console.error("Auth check failed:", error);
-    return false;
+    return null;
   }
 }
+
