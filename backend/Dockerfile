@@ -1,14 +1,10 @@
 # backend/Dockerfile
-# Use a stable Debian base to avoid apt repo issues
 FROM python:3.11-bullseye
 
-# Set working dir
 WORKDIR /app
-
-# Make apt quiet and noninteractive
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Install apt prerequisites and runtime deps (ca-certificates first)
+# Install prerequisites
 RUN apt-get update \
  && apt-get install -y --no-install-recommends \
       ca-certificates \
@@ -20,15 +16,21 @@ RUN apt-get update \
       libaio1 \
  && rm -rf /var/lib/apt/lists/*
 
-
-# Use provided extracted instantclient_23_9 folder
+# Copy Oracle Instant Client (only once!)
 COPY instantclient_23_9 /opt/oracle/instantclient
+
+# Configure linker and env
 RUN echo /opt/oracle/instantclient > /etc/ld.so.conf.d/oracle-instantclient.conf && ldconfig
-# Env for Oracle client
 ENV LD_LIBRARY_PATH=/opt/oracle/instantclient
 ENV PATH=$LD_LIBRARY_PATH:$PATH
+ENV INSTANT_CLIENT=/opt/oracle/instantclient
 
-# Copy & install python deps
+# Fix broken libclntsh symlink
+RUN cd /opt/oracle/instantclient && \
+    rm -f libclntsh.so && \
+    ln -s libclntsh.so.23.1 libclntsh.so
+
+# Install Python deps
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
@@ -37,6 +39,7 @@ COPY . .
 
 EXPOSE 8000
 
+# Healthcheck
 HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
   CMD curl -f http://localhost:8000/health || exit 1
 

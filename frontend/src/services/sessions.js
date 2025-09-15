@@ -1,7 +1,7 @@
 import axios from "axios";
 
 //const API_BASE_URL =  "http://localhost:8000";
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://10.0.1.74:8000";
 
 
 // Create a new session

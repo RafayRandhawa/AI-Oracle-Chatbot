@@ -4,17 +4,28 @@
 # Stage 1: Build the application
 FROM node:18-alpine AS builder
 
-# Set working directory
+#Set working directory
 WORKDIR /app
 
 # Copy package files
 COPY package*.json ./
 
-# Install all dependencies (including dev, needed for build)
+# Install dependencies (clean install)
 RUN npm ci
 
-# Copy source code
+# Copy source code (including .env)
 COPY . .
+COPY .env .env
+
+# Accept build arguments for env vars
+ARG VITE_API_URL
+ARG VITE_N8N_URL
+ARG VITE_ENV=production
+
+# Make them available to Vite during build
+ENV VITE_API_URL=$VITE_API_URL
+ENV VITE_N8N_URL=$VITE_N8N_URL
+ENV VITE_ENV=$VITE_ENV
 
 # Build the application (Vite outputs to /app/dist)
 RUN npm run build
@@ -22,7 +33,7 @@ RUN npm run build
 # Stage 2: Serve with nginx
 FROM nginx:alpine
 
-# Copy built application from builder stage
+# Copy built app
 COPY --from=builder /app/dist /usr/share/nginx/html
 
 # Copy custom nginx configuration

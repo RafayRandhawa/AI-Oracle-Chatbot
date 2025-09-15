@@ -5,7 +5,7 @@ import traceback
 import logging
 import re
 import time
-
+import platform
 # Cache variable to store metadata after first retrieval
 _cached_metadata = None
 
@@ -13,7 +13,16 @@ logging.basicConfig(filename="db_errors.log", level=logging.ERROR)
 # Initialize the Oracle Client in 'thick mode' by specifying the Instant Client path.
 # This is REQUIRED for connecting to older versions of Oracle like 11g.
 load_dotenv()
-#oracledb.init_oracle_client(lib_dir=os.getenv("INSTANT_CLIENT"))
+try:
+    if platform.system() == "Windows":
+        # Use your Windows instantclient path
+        oracledb.init_oracle_client(lib_dir=os.getenv("ORACLE_CLIENT_PATH", r"C:\oracle\instantclient_23_9"))
+    else:
+        # Linux / Docker path
+        oracledb.init_oracle_client(lib_dir="/opt/oracle/instantclient")
+except Exception as e:
+    logging.error("Oracle client init failed: %s", e)
+
 
 
 DB_USER = os.getenv('DB_USER')
@@ -123,7 +132,7 @@ def execute_query(query: str, params: dict = None):
             except: pass
 
 
-def extract_db_metadata(owner: str = 'chatbot_user', force_refresh=False):
+def extract_db_metadata(owner: str = os.getenv("DB_USER"), force_refresh=False):
     """
     Extracts comprehensive database metadata for a given owner/schema, with optional caching.
     """
