@@ -1,4 +1,3 @@
-// src/components/Login.jsx
 import React, { useState } from "react";
 import { useTheme } from "./theme-context";
 import { useAuth } from "../auth/authContext";
@@ -15,11 +14,17 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const user = await login(username, password);
-    if (user) {
-      navigate("/chat");
-    } else {
-      alert("Invalid credentials");
+    try {
+      const user = await login(username, password);
+      if (user && user.success !== false) {
+        // ✅ redirect to chat page
+        navigate("/chat", { replace: true });
+      } else {
+        alert("Invalid username or password");
+      }
+    } catch (err) {
+      console.error("Login failed:", err);
+      alert("Login failed. Please try again.");
     }
   };
 
@@ -59,6 +64,7 @@ const Login = () => {
               onChange={(e) => setUsername(e.target.value)}
               placeholder="Enter username"
               className={inputClasses}
+              required
             />
           </div>
 
@@ -73,6 +79,7 @@ const Login = () => {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Enter password"
               className={inputClasses}
+              required
             />
           </div>
 

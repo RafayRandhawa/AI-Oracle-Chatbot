@@ -3,9 +3,8 @@ import { Navigate } from "react-router-dom";
 import { useAuth } from "./authContext";
 
 export default function ProtectedRoute({ children }) {
-  const { user, isLoading } = useAuth();
+  const { user, token, isLoading } = useAuth();
 
-  // Show loading state while checking authentication
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -14,12 +13,10 @@ export default function ProtectedRoute({ children }) {
     );
   }
 
-  if (!user) {
-    // Not logged in, redirect to login page
+  if (!user && !token) {
     console.log("Not logged in, redirecting to login page");
     return <Navigate to="/" replace />;
   }
 
-  // Logged in, allow access
   return children;
 }

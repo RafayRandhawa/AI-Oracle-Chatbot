@@ -1,9 +1,7 @@
 import axios from "axios";
 
-//const API_BASE_URL =  "http://localhost:8000";
+//const API_BASE_URL = "http://localhost:8000";
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://10.0.1.74:8000";
-
-
 
 // Login (sets cookies on success)
 export async function loginUser(username, password) {
@@ -12,30 +10,43 @@ export async function loginUser(username, password) {
     const res = await axios.post(
       `${API_BASE_URL}/auth/login`,
       { username, password },
-      { withCredentials: true,
-        validateStatus: () => true
-       }
+      {
+        withCredentials: true,
+        validateStatus: () => true,
+      }
     );
-    if(res.status === 401) {
+
+    if (res.status === 401) {
       alert("Invalid username or password");
-      return { message: "Login failed" };
+      return { success: false, message: "Login failed" };
     }
-    console.log("Login response:", res.data);
-    return res.data;
-    
+
+    if (res.status >= 200 && res.status < 300) {
+      console.log("Login response:", res.data);
+      return { success: true, ...res.data };
+    }
+
+    return { success: false, message: res.data?.detail || "Login failed" };
   } catch (error) {
-    const detail = error?.response?.data?.detail || error?.message || "Login failed";
-    throw new Error(detail);
+    const detail =
+      error?.response?.data?.detail || error?.message || "Login failed";
+    return { success: false, message: detail };
   }
 }
 
 // Logout (clears cookies)
 export async function logoutUser() {
-  await axios.post(
-    `${API_BASE_URL}/auth/logout`,
-    {},
-    { withCredentials: true }
-  );
+  try {
+    await axios.post(
+      `${API_BASE_URL}/auth/logout`,
+      {},
+      { withCredentials: true }
+    );
+    return { success: true };
+  } catch (error) {
+    console.error("Logout failed:", error);
+    return { success: false };
+  }
 }
 
 // Get current user
@@ -48,8 +59,6 @@ export async function fetchMe() {
     return res.data?.logged_in === true;
   } catch (error) {
     console.error("Auth check failed:", error);
-    return false; 
+    return false;
   }
 }
-
-  
