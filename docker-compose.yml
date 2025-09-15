@@ -94,6 +94,7 @@ services:
       - ./workflows:/home/node/.n8n/workflows:ro
     networks:
       - oracle-ai-network
+    command: sh -c "n8n start & sleep 5 && n8n active:workflow --all"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5678/"]
       interval: 30s

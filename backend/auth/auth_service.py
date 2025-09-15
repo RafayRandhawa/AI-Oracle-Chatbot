@@ -12,12 +12,14 @@ load_dotenv()
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # Hash a plain password
-def hash_password(password: str) -> str:
-    return pwd_context.hash(password)
+# def hash_password(password: str) -> str:
+#     return pwd_context.hash(password)
 
-# Verify plain password against hashed password
-def verify_password(plain_password: str, hashed_password: str) -> bool:
-    return pwd_context.verify(plain_password, hashed_password)
+# # Verify plain password against hashed password
+# def verify_password(plain_password: str, hashed_password: str) -> bool:
+#     return pwd_context.verify(plain_password, hashed_password)
+
+
 
 # Create JWT token
 def create_token(data: dict, expires_delta: timedelta):
@@ -44,7 +46,10 @@ def authenticate_user(username: str, password: str):
     user = conn.cursor().execute("SELECT id,username,password_hash FROM users WHERE username = :1", (username,)).fetchone()
     conn.close()
 
-    if user and verify_password(password, user[2]):
+    # if user and verify_password(password, user[2]):
+    #     return {"id": user[0], "username": user[1]}
+    
+    if user and password.lower().strip() == user[2].lower().strip():  # Temporary plain text check
         return {"id": user[0], "username": user[1]}
     return None
 
