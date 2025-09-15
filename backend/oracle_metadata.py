@@ -166,4 +166,3 @@ FOREIGN KEY RELATIONSHIPS:
     print("🚀 Upserting to Pinecone...")
     upsert_metadata(meta_chunks)
     return meta_chunks
-

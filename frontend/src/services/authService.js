@@ -1,11 +1,11 @@
 import axios from "axios";
 
 //const API_BASE_URL = "http://localhost:8000";
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://10.0.1.74:8000";
+const API_BASE_URL =  "http://localhost:8000";
 
 // Login (sets cookies on success)
 export async function loginUser(username, password) {
-  console.log("API BASE URL:", import.meta.env.VITE_API_URL);
+  
   try {
     const res = await axios.post(
       `${API_BASE_URL}/auth/login`,

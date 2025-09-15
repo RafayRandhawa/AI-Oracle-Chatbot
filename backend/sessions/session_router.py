@@ -93,12 +93,6 @@ def get_messages_endpoint(session_id: int):
             content={"success": False, "message": "failed", "error": str(e)})
 
 
-from pydantic import BaseModel
-from fastapi import Depends
-from fastapi.responses import JSONResponse
-import traceback
-
-
 class MessageRequest(BaseModel):
     session_id: int
     role: str  # e.g. "user" or "assistant"
