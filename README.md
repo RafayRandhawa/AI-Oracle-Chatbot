@@ -50,31 +50,34 @@ Here’s what happens when a user asks:
 **“Show me employees hired after 2020”**
 
 1. **Frontend (React)**  
+   - User logs in via the UI (credentials sent to backend for authentication).  
    - User types the question in the chat UI.  
-   - The message is sent to the backend API.  
+   - The message, along with the **auth token**, is sent to the backend API.  
 
 2. **Backend (FastAPI)**  
-   - Receives the user’s request.  
-   - Uses **Gemini API** to convert natural language into SQL.  
+   - Receives request and validates user’s authentication token against **Oracle DB**.  
+   - Forwards the authenticated query to the main **n8n workflow** via webhook.  
 
-   Example generated SQL:  
-   ```sql
-   SELECT employee_id, first_name, last_name, hire_date
-   FROM employees
-   WHERE hire_date > DATE '2020-01-01';
-   ```
+3. **n8n Workflow (Orchestration & AI)**  
+   - **Metadata Retrieval**: Performs vector search on pre-computed Oracle schema embeddings to find relevant context.  
+   - **SQL Generation**: Uses **Gemini API** with query + metadata to generate Oracle SQL:  
 
-3. **Pinecone Vector Search**  
-   - Before running the query, the backend checks Pinecone embeddings to ensure that relevant **table and column metadata** are available.  
-   - This helps Gemini generate **valid SQL** by knowing what’s in the Oracle DB.  
+     ```sql
+     SELECT employee_id, first_name, last_name, hire_date
+     FROM employees
+     WHERE hire_date > DATE '2020-01-01';
+     ```
 
-4. **Oracle Database (via Instant Client)**  
-   - SQL is executed securely using parameterized queries.  
-   - Results are returned (e.g., a list of employees).  
+   - **Execution**: Runs the generated SQL against Oracle Database.  
 
-5. **Backend → Frontend**  
-   - Backend formats results into JSON and sends them back.  
-   - Frontend displays them in a chat bubble.  
+4. **Oracle Database**  
+   - Executes the SQL query securely.  
+   - Returns results to **n8n workflow**.  
+
+5. **n8n → Backend → Frontend**  
+   - n8n sends results back to Backend via webhook response.  
+   - Backend formats results into JSON.  
+   - Frontend displays results in chat interface.  
 
 **Final Output (example):**
 
@@ -85,46 +88,54 @@ Here’s what happens when a user asks:
 
 ---
 
-## 🛠️ Components Explained
+## 🛠️ Architecture & Components
 
 ### 1. Frontend (React + TailwindCSS)
-- Provides a **chat-style interface**.  
-- Handles **authentication** and **sessions**.  
-- Communicates with the backend via **REST API calls**.  
+- Chat-style user interface.  
+- Authentication and session management.  
+- REST API communication with backend.  
 
 ### 2. Backend (FastAPI + Python)
-- Orchestrates the logic:
-  - Receives user requests.  
-  - Calls Gemini to generate SQL.  
-  - Calls Pinecone for semantic metadata lookup.  
-  - Executes SQL against Oracle DB.  
-- Implements:
-  - **JWT Authentication**  
-  - **Session management**  
-  - **Logging + Error handling**  
+- Central API gateway and orchestrator.  
+- **Key Responsibilities:**  
+  - JWT Authentication against Oracle DB.  
+  - Webhook handling and n8n workflow triggering.  
+  - Data proxy between frontend and n8n.  
+  - Logging and error handling.  
 
-### 3. Oracle Database (via Instant Client)
-- Stores real business data.  
-- Queried using **oracledb** Python driver in **thick mode**.  
+### 3. n8n Workflows (Automation Engine)
+- Three core workflows:  
+  - **Metadata Embedding Workflow**: Periodic job that generates and stores vector embeddings of Oracle schema.  
+  - **Main Query Workflow**: Production workflow triggered by webhook – handles metadata retrieval, AI SQL generation, and query execution.  
+  - **Testing Workflow**: Manual chat-triggered workflow for development and testing.  
 
-### 4. Google Gemini API
-- Generates SQL queries from **natural language prompts**.  
-- Must be provided a **Gemini API key**.  
+### 4. Oracle Database
+- Primary business data storage.  
+- User authentication source.  
+- Direct query execution by n8n via **oracledb driver**.  
 
-### 5. Pinecone Vector DB
-- Stores **embeddings of Oracle database metadata**.  
-- Provides semantic search to make AI more accurate.  
+### 5. Google Gemini API
+- Natural language to SQL generation.  
+- Enhanced with relevant schema context from metadata embeddings.  
+- Requires **Gemini API key** configured in n8n.  
 
-### 6. Nginx (Reverse Proxy)
-- Handles traffic between frontend and backend.  
-- Exposes a single entrypoint (http://<system-ip>/).  
+### 6. Vector Database (Pinecone/ChromaDB)
+- Stores Oracle database metadata embeddings.  
+- Enables semantic search for relevant tables/columns.  
+- Populated by periodic n8n workflow.  
 
-### 7. Docker + Docker Compose
-- Encapsulates each service (frontend, backend, nginx).  
-- Ensures consistent runtime environment.  
-- Simplifies deployment.  
+### 7. Docker & Docker Compose
+- Containerized services (frontend, backend, n8n).  
+- Common internal network for secure communication.  
+- Consistent runtime environment and simplified deployment.  
 
----
+### 8. Deployment
+- Internal network deployment on shared server.  
+- Services exposed on common network IP:  
+  **http://sql-bot.lotte.internal**  
+- Nginx reverse proxy for traffic routing.  
+- Accessible to all employees.  
+
 
 ## 🛠️ Prerequisites
 
@@ -380,14 +391,3 @@ MIT License – see [LICENSE](LICENSE)
 
 ---
 
-## 🙏 Acknowledgments
-- **FastAPI** – Python backend  
-- **React** – Frontend framework  
-- **Oracle** – Database system  
-- **Google Gemini API** – SQL generation  
-- **Pinecone** – Vector search  
-- **Docker** – Containerization  
-
----
-
-**Made with ❤️ for intelligent Oracle database querying**
