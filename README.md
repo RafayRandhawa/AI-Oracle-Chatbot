@@ -1,104 +1,266 @@
-# Oracle AI Chatbot
+# Oracle AI Chatbot – Complete Documentation
 
-[![Docker](https://img.shields.io/badge/Docker-Ready-blue?logo=docker)](https://www.docker.com/)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.116.1-green?logo=fastapi)](https://fastapi.tiangolo.com/)
-[![React](https://img.shields.io/badge/React-19.1.0-blue?logo=react)](https://reactjs.org/)
-[![Oracle](https://img.shields.io/badge/Oracle-Database-red?logo=oracle)](https://www.oracle.com/database/)
-
-## 🎯 Project Overview
-
-The **Oracle AI Chatbot** is a sophisticated full-stack web application that transforms natural language queries into SQL, executes them against an Oracle Database, and returns structured, human-readable results. This solution integrates modern web technologies with AI-powered SQL generation and comprehensive session management.
-
-### 🌟 Key Features
-
-- **🤖 AI-Powered SQL Generation**: Converts natural language to SQL using Google Gemini AI
-- **🗄️ Oracle Database Integration**: Direct connection with Oracle Instant Client
-- **💬 Interactive Chat Interface**: Modern React-based chat UI with session management
-- **🔐 JWT Authentication**: Secure user authentication with cookie-based sessions
-- **📊 Vector Search**: Pinecone-powered semantic search for database metadata
-- **🔄 N8N Workflow Integration**: Automated workflow processing for AI responses
-- **🐳 Docker Ready**: Complete containerization with Docker Compose
-- **🌐 Production Ready**: Nginx reverse proxy with health checks and monitoring
+[![Docker](https://img.shields.io/badge/Docker-Ready-blue?logo=docker)](https://www.docker.com/)  
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.116.1-green?logo=fastapi)](https://fastapi.tiangolo.com/)  
+[![React](https://img.shields.io/badge/React-19.1.0-blue?logo=react)](https://reactjs.org/)  
+[![Oracle](https://img.shields.io/badge/Oracle-Database-red?logo=oracle)](https://www.oracle.com/database/)  
 
 ---
 
-## 🏗️ Architecture
+## 🎯 Project Overview
+
+The **Oracle AI Chatbot** is a full-stack application that allows users to query an Oracle Database using **plain natural language**.  
+
+The chatbot:  
+1. **Understands questions** using **Google Gemini API**.  
+2. **Generates SQL** queries dynamically.  
+3. **Uses Pinecone vector search** to reference Oracle database metadata for context.  
+4. **Executes SQL** queries on an Oracle Database.  
+5. **Displays results** in a modern, chat-style frontend.  
+
+This project demonstrates **AI + Database + Web Development + Cloud Integration** in one complete system.  
+
+---
+
+## 🏗️ System Architecture
 
 ```mermaid
 graph TB
     User[👤 User] --> Frontend[⚛️ React Frontend]
     Frontend --> Nginx[🌐 Nginx Reverse Proxy]
     Nginx --> Backend[🐍 FastAPI Backend]
-    Nginx --> N8N[🔄 N8N Workflow]
     
-    Backend --> Oracle[(🗄️ Oracle Database)]
+    Backend --> Oracle[(🗄 Oracle Database)]
     Backend --> Pinecone[(📊 Pinecone Vector DB)]
-    Backend --> Gemini[🤖 Google Gemini AI]
-    
-    N8N --> Backend
-    N8N --> Gemini
+    Backend --> Gemini[🤖 Google Gemini API]
     
     subgraph "Docker Environment"
         Frontend
         Backend
         Nginx
-        N8N
     end
 ```
 
 ---
 
-## 🚀 Quick Start
+## 🔄 Example Workflow (Step-by-Step)
 
-### Prerequisites
+Here’s what happens when a user asks:  
 
-- **Docker** and **Docker Compose** installed
-- **Oracle Database** accessible from deployment environment
-- **Google AI API Key** for Gemini integration
-- **Pinecone API Key** for vector search (optional)
+**“Show me employees hired after 2020”**
 
-### 1. Clone and Setup
+1. **Frontend (React)**  
+   - User types the question in the chat UI.  
+   - The message is sent to the backend API.  
+
+2. **Backend (FastAPI)**  
+   - Receives the user’s request.  
+   - Uses **Gemini API** to convert natural language into SQL.  
+
+   Example generated SQL:  
+   ```sql
+   SELECT employee_id, first_name, last_name, hire_date
+   FROM employees
+   WHERE hire_date > DATE '2020-01-01';
+   ```
+
+3. **Pinecone Vector Search**  
+   - Before running the query, the backend checks Pinecone embeddings to ensure that relevant **table and column metadata** are available.  
+   - This helps Gemini generate **valid SQL** by knowing what’s in the Oracle DB.  
+
+4. **Oracle Database (via Instant Client)**  
+   - SQL is executed securely using parameterized queries.  
+   - Results are returned (e.g., a list of employees).  
+
+5. **Backend → Frontend**  
+   - Backend formats results into JSON and sends them back.  
+   - Frontend displays them in a chat bubble.  
+
+**Final Output (example):**
+
+| Employee ID | First Name | Last Name | Hire Date   |
+|-------------|------------|-----------|-------------|
+| 101         | Alice      | Khan      | 2021-03-15  |
+| 115         | David      | Singh     | 2022-07-22  |
+
+---
+
+## 🛠️ Components Explained
+
+### 1. Frontend (React + TailwindCSS)
+- Provides a **chat-style interface**.  
+- Handles **authentication** and **sessions**.  
+- Communicates with the backend via **REST API calls**.  
+
+### 2. Backend (FastAPI + Python)
+- Orchestrates the logic:
+  - Receives user requests.  
+  - Calls Gemini to generate SQL.  
+  - Calls Pinecone for semantic metadata lookup.  
+  - Executes SQL against Oracle DB.  
+- Implements:
+  - **JWT Authentication**  
+  - **Session management**  
+  - **Logging + Error handling**  
+
+### 3. Oracle Database (via Instant Client)
+- Stores real business data.  
+- Queried using **oracledb** Python driver in **thick mode**.  
+
+### 4. Google Gemini API
+- Generates SQL queries from **natural language prompts**.  
+- Must be provided a **Gemini API key**.  
+
+### 5. Pinecone Vector DB
+- Stores **embeddings of Oracle database metadata**.  
+- Provides semantic search to make AI more accurate.  
+
+### 6. Nginx (Reverse Proxy)
+- Handles traffic between frontend and backend.  
+- Exposes a single entrypoint (http://<system-ip>/).  
+
+### 7. Docker + Docker Compose
+- Encapsulates each service (frontend, backend, nginx).  
+- Ensures consistent runtime environment.  
+- Simplifies deployment.  
+
+---
+
+## 🛠️ Prerequisites
+
+### System Requirements
+- **OS:** Linux / macOS / Windows (with WSL2 recommended).  
+- **RAM:** 8 GB minimum (16 GB recommended).  
+- **Disk space:** ~5 GB.  
+
+### Software Requirements
+- **Python 3.10+** → for backend (if running manually).  
+- **Node.js 18+** → for frontend (if running manually).  
+- **Oracle Instant Client** → required for Oracle DB connections.  
+- **Docker + Docker Compose** → for containerized deployment.  
+
+### Required API Keys
+- **Oracle Database**:  
+  - `DB_USER`, `DB_PASSWORD`, `DB_DSN`  
+- **Google Gemini API Key**:  
+  - From [Google AI Studio](https://ai.google.dev/)  
+- **Pinecone API Key**:  
+  - From [Pinecone Console](https://www.pinecone.io/console/)  
+
+---
+
+## 🚀 Quick Start with Docker
 
 ```bash
+# Clone the repository
 git clone <repository-url>
 cd AI-Oracle-Chatbot
-```
 
-### 2. Configure Environment
-
-```bash
-# Copy environment templates
-cp env.example .env
-cp frontend/env.example frontend/.env
-
-# Edit .env files with your configuration
-# See Environment Configuration section below
-```
-
-### 3. Deploy with Docker
-
-#### Windows:
-```powershell
-.\deploy.ps1
-```
-
-#### Linux/Mac:
-```bash
-chmod +x deploy.sh
-./deploy.sh
-```
-
-#### Manual Deployment:
-```bash
+# Build and start services
 docker-compose up -d --build
+
+# Check services
+docker-compose ps
 ```
 
-### 4. Access the Application
+### Access
+- **Frontend** → http://localhost  
+- **Backend API** → http://localhost/api  
+- **Health Check** → http://localhost/health  
 
-- **Frontend**: http://localhost
-- **Backend API**: http://localhost/api
-- **N8N Interface**: http://localhost/n8n (if enabled)
-- **Health Check**: http://localhost/health
+---
+
+## 🔧 Configuration
+
+### Backend `.env`
+```env
+INSTANT_CLIENT=D:\instantclient_23_9
+
+GEMINI_API_KEY=your_gemini_api_key
+PINECONE_API_KEY=your_pinecone_api_key
+
+DB_USER=tif
+DB_PASSWORD=tif
+DB_DSN=10.0.0.28:1523/prod
+
+PINECONE_INDEX_NAME=oracle-metadata
+PINECONE_NAMESPACE="ai oracle metadata"
+
+JWT_SECRET="my_secret_key"
+JWT_ALGORITHM="HS256"
+```
+
+⚠️ Notes:  
+- Ensure `INSTANT_CLIENT` points to a valid installation path.  
+- Update `DB_DSN` with the correct IP/port/service name of Oracle DB.  
+- Replace API keys with valid credentials.  
+
+### Frontend Configuration
+- The frontend does **not** require a `.env` file.  
+- Instead, update the **API base URL in service files** to use your **system IP address**.  
+
+Example:  
+```js
+// Example in frontend services
+const API_BASE_URL = "http://192.168.1.100/api";
+```
+
+⚠️ **Important:** Always replace `localhost` with your **system’s IP** so other machines can access the chatbot.  
+
+---
+
+## 🛠️ Development Setup (Manual, Without Docker)
+
+### Backend
+```bash
+cd backend
+python -m venv venv
+source venv/bin/activate   # Windows: venv\Scripts\activate
+pip install -r requirements.txt
+
+uvicorn main:app --reload --port 8000
+```
+
+### Frontend
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Then open → http://localhost:3000  
+
+---
+
+---
+
+## 🛠️ Deployment Setup (Requires Docker)
+
+### Up
+```bash
+docker compose build
+
+docker compose up
+```
+
+### Down
+
+```bash     
+docker compose down
+```
+
+### Restart a Specific Service 
+```bash
+docker restart <name of the service>
+```
+***Note:*** Services are listed in docker-compose.yml
+
+### Force Recreate
+```bash
+docker compose up -d --build --force-recreate
+```
+
+Then open → http://localhost:3000  
 
 ---
 
@@ -106,342 +268,126 @@ docker-compose up -d --build
 
 ```
 AI-Oracle-Chatbot/
-├── 📁 backend/                    # FastAPI Backend
-│   ├── 🐳 Dockerfile             # Backend container config
-│   ├── 📄 main.py                 # FastAPI application
-│   ├── 📄 ai_handler.py          # AI integration (Gemini)
-│   ├── 📄 db_handler.py           # Oracle DB operations
-│   ├── 📄 embedder.py             # Text embedding utilities
-│   ├── 📄 pinecone_utils.py       # Vector search operations
-│   ├── 📄 oracle_metadata.py      # Database metadata extraction
-│   ├── 📁 auth/                   # Authentication module
-│   │   ├── 📄 auth_routes.py      # Auth endpoints
-│   │   └── 📄 auth_service.py     # Auth business logic
-│   ├── 📁 sessions/               # Session management
-│   │   ├── 📄 session_router.py   # Session endpoints
-│   │   └── 📄 session_service.py  # Session business logic
-│   └── 📄 requirements.txt        # Python dependencies
-├── 📁 frontend/                   # React Frontend
-│   ├── 🐳 Dockerfile             # Frontend container config
-│   ├── 📄 nginx.conf              # Frontend nginx config
-│   ├── 📁 src/
-│   │   ├── 📄 App.jsx             # Main React component
-│   │   ├── 📁 components/         # React components
-│   │   │   ├── 📄 chat-ui.jsx     # Chat interface
-│   │   │   ├── 📄 input-area.jsx  # Message input
-│   │   │   ├── 📄 login.jsx        # Login form
-│   │   │   └── 📁 ui/             # UI components
-│   │   ├── 📁 auth/               # Authentication context
-│   │   ├── 📁 services/           # API services
-│   │   └── 📁 lib/                # Utilities
-│   └── 📄 package.json             # NPM dependencies
-├── 📁 nginx/                      # Nginx Configuration
-│   ├── 📄 nginx.conf              # Main nginx config
-│   └── 📁 conf.d/
-│       └── 📄 default.conf         # Site routing
-├── 📁 workflows/                  # N8N Workflows
-│   ├── 📄 readme.md               # Workflow documentation
-│   └── 📄 updated!.json           # N8N workflow definition
-├── 🐳 docker-compose.yml          # Service orchestration
-├── 📄 deploy.sh                   # Linux/Mac deployment script
-├── 📄 deploy.ps1                   # Windows deployment script
-├── 📄 CHANGES.md                  # Change documentation
-├── 📄 DEPLOYMENT.md               # Deployment guide
-└── 📄 env.example                  # Environment template
+├── backend/             # FastAPI backend
+│   ├── main.py
+│   ├── db_handler.py
+│   ├── ai_handler.py
+│   ├── auth/ …
+├── frontend/            # React frontend
+│   ├── src/
+│   ├── package.json
+├── nginx/               # Reverse proxy configs
+├── docker-compose.yml   # Multi-service orchestration
+├── deploy.sh / ps1      # Deployment scripts
+└── docs/                # Extended documentation
 ```
 
 ---
 
-## 🔧 Environment Configuration
+## 🐳 How Docker Works Here
 
-### Backend Environment (.env)
+- **Backend container** → Runs FastAPI + Oracle client.  
+- **Frontend container** → Builds and serves React app.  
+- **Nginx container** → Routes requests to backend/frontend.  
 
-```env
-# Database Configuration
-DB_HOST=your_oracle_host
-DB_PORT=1521
-DB_SERVICE_NAME=your_service_name
-DB_USERNAME=your_username
-DB_PASSWORD=your_password
-
-# JWT Configuration
-JWT_SECRET_KEY=your-super-secret-jwt-key-minimum-32-characters
-JWT_ALGORITHM=HS256
-JWT_ACCESS_TOKEN_EXPIRE_MINUTES=30
-
-# AI Service Configuration
-GOOGLE_AI_API_KEY=your_google_ai_api_key
-PINECONE_API_KEY=your_pinecone_api_key
-PINECONE_ENVIRONMENT=your_pinecone_environment
-PINECONE_INDEX_NAME=oracle-metadata
-
-# N8N Configuration
-N8N_WEBHOOK_URL=http://localhost:5678/webhook-test/your-webhook-id
-```
-
-### Frontend Environment (frontend/.env)
-
-```env
-# API Configuration
-REACT_APP_API_BASE_URL=http://localhost/api
-REACT_APP_N8N_URL=http://localhost/webhook/your-webhook-id
-```
+**Why Docker?**
+- Consistent across all systems.  
+- No need to manually install Node.js or Python dependencies.  
+- Easy to clean and reset with one command.  
+- Portable → can be deployed anywhere with Docker installed.  
 
 ---
 
-## 🔌 API Endpoints
+## 🐳 Docker Desktop and Why It’s Helpful
 
-### Authentication (`/auth`)
+### What is Docker Desktop?  
+[Docker Desktop](https://www.docker.com/products/docker-desktop/) is a graphical application for Windows and macOS that bundles:  
+- **Docker Engine** (runs containers)  
+- **Docker Compose** (runs multiple containers together)  
+- **Container management UI** (visual way to see containers, images, logs, volumes)  
 
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| POST | `/auth/login` | User login | ❌ |
-| POST | `/auth/logout` | User logout | ✅ |
-| GET | `/auth/me` | Get current user | ✅ |
+### Why Use Docker Desktop for This Project?  
+The Oracle AI Chatbot runs multiple services (**frontend, backend, Nginx**) that need to communicate with each other. Docker Desktop simplifies this by:  
 
-### Sessions (`/sessions`)
+1. **One-Click Startup** – Run `docker-compose up` and all containers start automatically.  
+2. **Unified Environment** – No need to manually install Node.js or Python dependencies — containers already include them.  
+3. **Cross-Platform Consistency** – Works the same on Windows, macOS, and Linux.  
+4. **Easy Debugging** – You can open Docker Desktop → see running containers → check logs.  
+5. **Resource Management** – Configure how much CPU/RAM Docker can use (helpful if running on a laptop).  
+6. **Networking Made Simple** – All services run inside a private Docker network, connected automatically.  
 
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| POST | `/sessions/create` | Create new session | ✅ |
-| GET | `/sessions/list` | Get user sessions | ✅ |
-| GET | `/sessions/{id}/messages` | Get session messages | ✅ |
-| POST | `/sessions/{id}/messages` | Store message | ✅ |
-| DELETE | `/sessions/{id}` | Delete session | ✅ |
-| PUT | `/sessions/{id}/rename` | Rename session | ✅ |
-
-### Core API (`/`)
-
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| POST | `/query` | Generate SQL and execute | ❌ |
-| GET | `/db-direct` | Direct database query | ❌ |
-| POST | `/similar-metadata` | Semantic metadata search | ❌ |
-| POST | `/embed-metadata` | Generate embeddings | ❌ |
-| GET | `/refresh-metadata` | Refresh DB metadata cache | ❌ |
-| GET | `/health` | Health check | ❌ |
-
----
-
-## 🛠️ Development Setup
-
-### Backend Development
-
+### Example: Viewing Containers in Docker Desktop
+When you start the chatbot with:
 ```bash
-cd backend
-
-# Create virtual environment
-python -m venv venv
-
-# Activate virtual environment
-# Windows:
-venv\Scripts\activate
-# Linux/Mac:
-source venv/bin/activate
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Setup Oracle Instant Client
-# Download from Oracle website and extract
-# Initialize thick mode in your code:
-# oracledb.init_oracle_client(lib_dir="path/to/instantclient")
-
-# Run development server
-uvicorn main:app --reload --host 0.0.0.0 --port 8000
+docker-compose up -d --build
 ```
+You’ll see in Docker Desktop:  
+- **backend** → FastAPI + Oracle client  
+- **frontend** → React app served via Nginx  
+- **nginx** → Reverse proxy handling routing  
 
-### Frontend Development
-
-```bash
-cd frontend
-
-# Install dependencies
-npm install
-
-# Run development server
-npm run dev
-```
+Each container can be inspected for logs, CPU/memory usage, and health status.  
 
 ---
 
-## 🐳 Docker Services
+## 🔍 Health Checks
 
-### Service Overview
-
-| Service | Port | Description |
-|---------|------|-------------|
-| **nginx** | 80, 443 | Reverse proxy and load balancer |
-| **backend** | 8000 | FastAPI application |
-| **frontend** | 3000 | React application (internal) |
-| **n8n** | 5678 | Workflow automation (optional) |
-
-### Service Management
-
-```bash
-# Start all services
-docker-compose up -d
-
-# View service status
-docker-compose ps
-
-# View logs
-docker-compose logs -f [service-name]
-
-# Stop services
-docker-compose down
-
-# Restart services
-docker-compose restart
-
-# Clean up
-docker-compose down --volumes --remove-orphans
-docker system prune -f
-```
-
----
-
-## 🔍 Monitoring and Health Checks
-
-### Health Check Endpoints
-
-- **Backend**: http://localhost:8000/health
-- **Frontend**: http://localhost:3000/health
-- **Nginx**: http://localhost/health
-
-### Monitoring Commands
-
-```bash
-# Check service health
-curl http://localhost/health
-
-# View service logs
-docker-compose logs --tail=100 backend
-
-# Check service status
-docker-compose ps
-```
-
----
-
-## 🔐 Security Features
-
-- **JWT Authentication**: Secure token-based authentication
-- **CORS Protection**: Configured for production environments
-- **Rate Limiting**: API endpoints protected with rate limiting
-- **Security Headers**: XSS protection, content type sniffing prevention
-- **Input Validation**: Pydantic models for request validation
-- **SQL Injection Protection**: Parameterized queries and validation
+- Backend → http://localhost:8000/health  
+- Frontend → http://localhost:3000/health  
+- Nginx → http://localhost/health  
 
 ---
 
 ## 🚨 Troubleshooting
 
-### Common Issues
-
-1. **Port Conflicts**
+1. **Port conflicts**  
    ```bash
-   # Check if ports are in use
    netstat -tulpn | grep :80
    netstat -tulpn | grep :8000
    ```
 
-2. **Database Connection Issues**
+2. **Oracle DB connection issues**  
    ```bash
-   # Check Oracle connectivity
    docker-compose logs backend | grep -i oracle
    ```
 
-3. **Environment Variables**
+3. **Check env variables**  
    ```bash
-   # Verify environment configuration
    docker-compose config
    ```
 
-4. **Docker Resources**
+4. **Reset everything**  
    ```bash
-   # Check Docker resources
-   docker system df
+   docker-compose down --volumes --remove-orphans
    docker system prune -f
    ```
 
-### Debug Commands
-
-```bash
-# Enter backend container
-docker-compose exec backend bash
-
-# Check database connection
-docker-compose exec backend python -c "import oracledb; print('Oracle client available')"
-
-# View detailed logs
-docker-compose logs --tail=100 --follow backend
-```
-
 ---
 
-## 📚 Comprehensive Documentation
+## 🔐 Security Features
 
-### 📖 Complete Documentation Suite
-- **[Documentation Index](docs/README.md)** - Complete documentation overview and navigation
-- **[API Documentation](docs/API.md)** - Complete API reference with examples
-- **[Backend Architecture](docs/BACKEND.md)** - FastAPI services and AI integration
-- **[Frontend Components](docs/FRONTEND.md)** - React component architecture guide
-- **[Database Schema](docs/DATABASE.md)** - Complete database structure and relationships
-- **[N8N Workflows](docs/N8N.md)** - Workflow automation and AI integration
-- **[Troubleshooting Guide](docs/TROUBLESHOOTING.md)** - Comprehensive issue resolution
-- **[Contributing Guidelines](docs/CONTRIBUTING.md)** - Development workflow and standards
-
-### 🚀 Quick Reference
-- **[CHANGES.md](CHANGES.md)** - Detailed change log and development history
-- **[DEPLOYMENT.md](DEPLOYMENT.md)** - Quick deployment guide
-
----
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-### Development Guidelines
-
-- Follow PEP 8 for Python code
-- Use ESLint for JavaScript/React code
-- Write comprehensive tests
-- Update documentation for new features
-- Follow semantic versioning
+- JWT Authentication  
+- Secure password handling  
+- CORS protection  
+- Rate limiting on API endpoints  
+- SQL injection prevention via parameterized queries  
 
 ---
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+MIT License – see [LICENSE](LICENSE)
 
 ---
 
 ## 🙏 Acknowledgments
-
-- **FastAPI** - Modern, fast web framework for building APIs
-- **React** - A JavaScript library for building user interfaces
-- **Oracle** - Enterprise database management system
-- **Google Gemini** - Advanced AI model for natural language processing
-- **Pinecone** - Vector database for similarity search
-- **N8N** - Workflow automation platform
-- **Docker** - Containerization platform
+- **FastAPI** – Python backend  
+- **React** – Frontend framework  
+- **Oracle** – Database system  
+- **Google Gemini API** – SQL generation  
+- **Pinecone** – Vector search  
+- **Docker** – Containerization  
 
 ---
 
-## 📞 Support
-
-For support and questions:
-
-- 📧 Email: [your-email@domain.com]
-- 🐛 Issues: [GitHub Issues](https://github.com/your-repo/issues)
-- 📖 Documentation: [Project Wiki](https://github.com/your-repo/wiki)
-
----
-
-**Made with ❤️ for efficient database querying**
+**Made with ❤️ for intelligent Oracle database querying**

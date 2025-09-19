@@ -15,7 +15,7 @@ RUN npm ci
 
 # Copy source code (including .env)
 COPY . .
-COPY .env .env
+#COPY .env .env
 
 # Accept build arguments for env vars
 ARG VITE_API_URL

@@ -1,7 +1,7 @@
 import axios from "axios";
 
 //const API_BASE_URL = "http://localhost:8000";
-const API_BASE_URL =  "http://localhost:8000";
+const API_BASE_URL =  "http://10.0.1.74:8000";
 
 // Login (sets cookies on success)
 export async function loginUser(username, password) {

@@ -3,7 +3,7 @@ import axios from 'axios';
 /**
  * API client for your n8n chat workflow
  */
-const N8N_URL = 'http://localhost:5678/webhook-test/03e650c2-18be-4c37-903a-4e99bddcc8b1';
+const N8N_URL = 'http://10.0.1.74:5678/webhook/03e650c2-18be-4c37-903a-4e99bddcc8b1';
 
 /**
  * Sends the user's message to the n8n webhook and returns markdown text.

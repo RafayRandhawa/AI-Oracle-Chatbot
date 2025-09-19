@@ -127,6 +127,9 @@ def check_pinecone_connection():
 
 # Query similar metadata - UPDATED FOR TABLE-LEVEL EMBEDDINGS
 def query_similar_metadata(embedding, top_k=5):
+    if not embedding or len(embedding) == 0:
+        raise ValueError("No embedding generated. Check embedding API response before querying Pinecone.")
+
     try:
         response = index.query(
             vector=embedding,
